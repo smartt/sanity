@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from datetime import date, datetime
 import re
 
 import cast
@@ -11,6 +12,42 @@ __version__ = "0.1"
 __url__ = "http://github.com/smartt/sanity"
 __doc__ = "A collection of misguided hacks."
 
+def date_by_pattern(s, pattern, return_match_str=False):
+    """
+    >>> date_by_pattern('4/20/2014', '%m/%d/%Y')
+    datetime.date(2014, 4, 20)
+
+    >>> date_by_pattern('4/20', '%m/%d')
+    datetime.date(2014, 4, 20)
+
+    >>> date_by_pattern('4.20', '%m.%d')
+    datetime.date(2014, 4, 20)
+
+    >>> date_by_pattern('420', '%m/%d')
+
+    """
+    # tokenize..
+    bits = s.split(' ')
+    d = None
+
+    # and scan..
+    for bit in bits:
+        try:
+            parsed_date = datetime.strptime(bit, pattern).date()
+        except ValueError:
+            continue
+        else:
+            if parsed_date.year == 1900:
+                d = date(datetime.now().year, parsed_date.month, parsed_date.day)
+            else:
+                d = date(parsed_date.year, parsed_date.month, parsed_date.day)
+
+            break
+
+    if return_match_str:
+        return d, bit
+    else:
+        return d
 
 def just_numbers(s, decimals=False):
     """
