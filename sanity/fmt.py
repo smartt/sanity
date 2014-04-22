@@ -667,7 +667,7 @@ def char_entities_to_decimal(s):
 
     return s
 
-def simplify_entities(s, as_unicode=True):
+def simplify_entities(s):
     """
     >>> simplify_entities('Hi &nbsp;there!')
     u'Hi  there!'
@@ -696,15 +696,10 @@ def simplify_entities(s, as_unicode=True):
         u'\\n': '',
     }
 
-    if as_unicode:
-        s = cast.to_unicode(s)
+    s = cast.to_unicode(s)
 
-        for k, v in mapping.items():
-            s = s.replace(k, v)
-
-    else:
-        for k, v in mapping.items():
-            s = s.replace(k, v)
+    for k, v in mapping.items():
+        s = s.replace(k, v)
 
     return s
 
