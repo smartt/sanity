@@ -751,6 +751,15 @@ def remove_comments(s):
     >>> remove_comments("hi@there.com")
     'hi@there.com'
 
+    >>> remove_comments('<p>Hi <!-- something -->There</p>')
+    '<p>Hi There</p>'
+
+    >>> remove_comments('<p>Hi <! something -->There</p>')
+    '<p>Hi There</p>'
+
+    >>> remove_comments('<p>Hi There</p><!--[if !mso]>')
+    '<p>Hi There</p>'
+
     """
     if s is None:
         return None
@@ -760,6 +769,9 @@ def remove_comments(s):
     s = s.split('#')[0]
 
     s = re.sub(r'/\*.*\*/', '', s)
+
+    # Remove HTML/XML comments
+    s = re.sub(pattern=r'(<!)([^>]+)(>)', repl='', string=s)
 
     return s.strip()
 
@@ -808,9 +820,25 @@ def strip_tags(value):
     except IndexError:
         return s
 
+def nuke_newlines(s):
+    return compress_whitespace(s.replace('\n', ' ').replace('\r', ' ').strip())
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
+
     print "Testing..."
+
+    # Run the doctests
     doctest.testmod()
+
+    # Now some that are trickier via doctest
+    s = """
+    This is
+    a test
+    """
+    assert nuke_newlines(s) == "This is a test"
+
+    # Woot!
     print "Done."
+
