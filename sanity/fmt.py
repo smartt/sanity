@@ -217,7 +217,7 @@ ascii_map = [
     {'ansi_num': '&#255;', 'ansi_hex': (u'\xc3\xbf', u'\xFF'), 'html_entity': '&yuml;'},
 
     {'ansi_num': '&#338;', 'ansi_hex': (u'\xc5\x92', u'\x8C'), 'html_entity': '&OElig;'},
-    {'ansi_num': '&#339;', 'ansi_hex': (u'\xc5\x93', u'\x9C'), 'html_entity': '&oelig;'},
+    {'ansi_num': '&#339;', 'ansi_hex': (u'œ', u'\xc5\x93', u'\x9C'), 'html_entity': '&oelig;'},
     {'ansi_num': '&#352;', 'ansi_hex': (u'\xc5\xa0', u'\x8A'), 'html_entity': '&Scaron;'},
     {'ansi_num': '&#353;', 'ansi_hex': (u'\xc5\xa1', u'\x9A'), 'html_entity': '&scaron;'},
     {'ansi_num': '&#376;', 'ansi_hex': (u'\xc5\xb8', u'\x9F'), 'html_entity': '&Yuml;'},
@@ -308,7 +308,7 @@ ascii_map = [
     {'ansi_num': "&#8254;", 'ansi_hex': u'\xef\xa3\xa5', 'html_entity': "&oline;"},
     {'ansi_num': "&#8260;", 'ansi_hex': u'\xe2\x81\x84', 'html_entity': "&frasl;"},
 
-    {'ansi_num': '&#8364;', 'ansi_hex': (u'\xe2\x82\xac', u'\x80'), 'html_entity': '&euro;'},
+    {'ansi_num': '&#8364;', 'ansi_hex': (u'€', u'\xe2\x82\xac', u'\x80'), 'html_entity': '&euro;'},
     {'ansi_num': '&#8482;', 'ansi_hex': u'\x99', 'html_entity': '&trade;'},
 
     {'ansi_num': "&#8465;", 'ansi_hex': u'\xe2\x84\x91', 'html_entity': "&image;"},
@@ -574,13 +574,13 @@ def escape(s):
 
     return s
 
-def replace_by_mapping(s, from_type, to_type, skip_list=None):
+def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
     s = cast.to_unicode(s)
 
-    # print(u'replace_by_mapping(s="{s}", from_type="{ft}", to_type="{tt}"'.format(s=s, ft=from_type, tt=to_type))
+    if debug: print(u'replace_by_mapping(s="{s}", from_type="{ft}", to_type="{tt}"'.format(s=s, ft=from_type, tt=to_type))
 
     def _get_values_for_key(k, mapping, default=None):
-        # print('_get_values_for_key(k={k}, mapping={m}, default={d})'.format(k=k, m=mapping, d=default))
+        if debug: print('_get_values_for_key(k={k}, mapping={m}, default={d})'.format(k=k, m=mapping, d=default))
 
         if k in mapping:
             # Ultimately, we're trying to get a list of elements
@@ -588,19 +588,19 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None):
 
             if isinstance(val, (str, unicode)):
                 # Create a list from a single element
-                # print('    -> casting to a list and returning val')
+                if debug: print('    -> casting to a list and returning val')
                 return [val]
 
             elif isinstance(val, (tuple, list)):
                 # Just keep the list
-                # print('    -> returning val')
+                if debug: print('    -> returning val')
                 return val
 
-            # else:
-                # print('    -> WTF! val: {v} is of type: {t}'.format(v=val, t=type(val)))
+            else:
+                if debug: print('    -> WTF! val: {v} is of type: {t}'.format(v=val, t=type(val)))
 
-        # else:
-            # print('    -> NO KEY; returning {d}'.format(d=default))
+        else:
+            if debug: print('    -> NO KEY; returning {d}'.format(d=default))
 
         return default
 
@@ -610,29 +610,29 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None):
         if not from_entities:
             continue
 
-        # print(u'  using from_entities: {l}'.format(l=from_entities))
+        if debug: print(u'  using from_entities: {l}'.format(l=from_entities))
         
         to_entities = _get_values_for_key(to_type, mapping, default=None)
 
         if to_entities is not None:
-            # print('  using to_entities: {l}'.format(l=to_entities))
+            if debug: print('  using to_entities: {l}'.format(l=to_entities))
 
             for k in from_entities:
-                # print(u'  "{s}".replace("{k}", "{v}")'.format(s=s, k=k, v=to_entities[0]))
+                if debug: print(u'  "{s}".replace("{k}", "{v}")'.format(s=s, k=k, v=to_entities[0]))
 
                 if skip_list and k in skip_list:
                     continue
 
                 s = s.replace(k, to_entities[0])
 
-                # print(u'  s -> {s}'.format(s=s))
+                if debug: print(u'  s -> {s}'.format(s=s))
 
-        # else:
-            # print('  SKIP')
+        else:
+            if debug: print('  SKIP')
 
     return s
  
-def sub_greeks(s, skip_list=None, mode=None):
+def sub_greeks(s, skip_list=None, mode=None, debug=False):
     """
     >>> sub_greeks('hi there')
     u'hi there'
@@ -649,6 +649,9 @@ def sub_greeks(s, skip_list=None, mode=None):
     >>> sub_greeks('<p>hi&mdash;there</p>', mode='html')
     u'<p>hi&mdash;there</p>'
 
+    >>> sub_greeks('some &#226;€&#166; text filled with little errors', mode='html', debug=0)
+    u'some &#226;&euro;&#166; text filled with little errors'
+
     """
     if mode == "html":
         if not skip_list:
@@ -659,7 +662,7 @@ def sub_greeks(s, skip_list=None, mode=None):
             if k not in skip_list:
                 skip_list.append(k)
 
-    s = replace_by_mapping(s, 'ansi_hex', 'html_entity', skip_list=skip_list)
+    s = replace_by_mapping(s, 'ansi_hex', 'html_entity', skip_list=skip_list, debug=debug)
 
     return s
    

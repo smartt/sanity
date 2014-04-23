@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __license__ = "MIT"
-__version__ = "0.1"
+__version__ = "0.2"
 __url__ = "http://github.com/smartt/sanity"
 __doc__ = "A collection of misguided hacks."
 
@@ -111,17 +111,21 @@ def to_int(arg, default=0):
         return default
 
 def to_ascii(s):
-    """Tries really hard to return an ASCII string."""
+    """
+    >>> to_ascii('hi there')
+    'hi there'
 
-    try:
-        s = unicode(s, 'utf-8', 'ignore')
-    except TypeError:
-        return s
+    >>> to_ascii('hi €there')
+    'hi there'
 
-    s = unicodedata.normalize('NFKD', s).encode('ascii', 'ignore')
-    #s = unicodedata.normalize('NFKD', s).encode('ascii', 'replace')
+    >>> to_ascii(u'hi there')
+    'hi there'
 
-    return s
+    >>> to_ascii(u'hi&mdash;there')
+    'hi&mdash;there'
+
+    """
+    return str(''.join([c for c in s if 0 <= ord(c) <= 128]))
 
 def to_unicode(s, encoding='utf-8', errors='strict'):
     """
