@@ -848,6 +848,22 @@ def remove_empty_tags(s, tags=('p', 'i', 'em', 'span')):
 
     return s
 
+def normalize_br_tags(s):
+    """
+    I like 'em this way.
+
+    >>> normalize_br_tags('Hi there')
+    'Hi there'
+
+    >>> normalize_br_tags('Hi <br>there')
+    'Hi <br />there'
+
+    >>> normalize_br_tags('Hi there<br/>')
+    'Hi there<br />'
+
+    """
+    return s.replace("<br>", "<br />").replace("<br/>", "<br />")
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
