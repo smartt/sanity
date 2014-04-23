@@ -410,9 +410,6 @@ def compress_whitespace(s):
     'hi @ there . com'
 
     """
-    # Cast to string
-    s = str(s).strip()
-
     # Sanity check
     if (len(s) == 0):
         return ''
@@ -696,6 +693,9 @@ def simplify_entities(s):
     >>> simplify_entities('Hi&mdash;there!')
     u'Hi--there!'
 
+    >>> simplify_entities('here\u2014and there!')
+    u'here--and there!'
+
     """
     mapping = {
         u'&nbsp;': ' ',
@@ -713,6 +713,15 @@ def simplify_entities(s):
         u'\u201d': '"',
         u'\u201D': '"',
         u'\u2026': '...',
+        u'\\u2013': '-',
+        u'\\u2014': '--',
+        u'\\u2018': "'",
+        u'\\u2019': "'",
+        u'\\u201c': '"',
+        u'\\u201C': '"',
+        u'\\u201d': '"',
+        u'\\u201D': '"',
+        u'\\u2026': '...',
         u'\\r': '',
         u'\\n': '',
     }

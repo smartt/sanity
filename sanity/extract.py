@@ -45,6 +45,8 @@ def date_by_pattern(s, pattern, return_match_str=False):
             break
 
     if return_match_str:
+        # This is a little sketchy because we're returning a variable that is
+        # conceptually just in the for-loop scope, but in python in sticks around.
         return d, bit
     else:
         return d
@@ -137,7 +139,7 @@ def email(s):
 
     """
     # Pattern from https://developers.google.com/edu/python/regular-expressions
-    mo = re.search('([\w.-]+)@([\w.-]+)', s.replace('<', ' ').replace('>', ' '))
+    mo = re.search(r'([\w.-]+)@([\w.-]+)', s.replace('<', ' ').replace('>', ' '))
 
     if mo:
         return '{front}@{back}'.format(front=mo.group(1), back=mo.group(2))
