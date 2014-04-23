@@ -20,11 +20,11 @@ __doc__ = "A collection of misguided hacks."
 ascii_map = [
     {'ansi_num': '&#32;', 'ansi_hex': u'\x20', 'ascii_replace': ' '},
     {'ansi_num': '&#33;', 'ansi_hex': u'\x21', 'ascii_replace': '!'},
-    {'ansi_num': '&#34;', 'ansi_hex': u'\x22', 'html_entity': '&quot;'},
+    {'ansi_num': '&#34;', 'ansi_hex': u'\x22', 'ascii_replace': '"', 'html_entity': '&quot;'},
     {'ansi_num': '&#35;', 'ansi_hex': u'\x23', 'ascii_replace': '#'},
     {'ansi_num': '&#36;', 'ansi_hex': u'\x24', 'ascii_replace': '$'},
     {'ansi_num': '&#37;', 'ansi_hex': u'\x25', 'ascii_replace': '%'},
-    {'ansi_num': '&#38;', 'ansi_hex': u'\x26', 'html_entity': '&amp;'},
+    {'ansi_num': '&#38;', 'ansi_hex': u'\x26', 'ascii_replace': '&', 'html_entity': '&amp;'},
     {'ansi_num': '&#39;', 'ansi_hex': u'\x27', 'ascii_replace': "'"},
     {'ansi_num': '&#40;', 'ansi_hex': u'\x28', 'ascii_replace': '('},
     {'ansi_num': '&#41;', 'ansi_hex': u'\x29', 'ascii_replace': ')'},
@@ -46,9 +46,9 @@ ascii_map = [
     {'ansi_num': '&#57;', 'ansi_hex': u'\x39', 'ascii_replace': '9'},
     {'ansi_num': '&#58;', 'ansi_hex': u'\x3A', 'ascii_replace': ':'},
     {'ansi_num': '&#59;', 'ansi_hex': u'\x3B', 'ascii_replace': ';'},
-    {'ansi_num': '&#60;', 'ansi_hex': u'\x3C', 'html_entity': '&lt;'},
+    {'ansi_num': '&#60;', 'ansi_hex': u'\x3C', 'ascii_replace': '<', 'html_entity': '&lt;'},
     {'ansi_num': '&#61;', 'ansi_hex': u'\x3D', 'ascii_replace': '='},
-    {'ansi_num': '&#62;', 'ansi_hex': u'\x3E', 'html_entity': '&gt;'},
+    {'ansi_num': '&#62;', 'ansi_hex': u'\x3E', 'ascii_replace': '>', 'html_entity': '&gt;'},
     {'ansi_num': '&#63;', 'ansi_hex': u'\x3F', 'ascii_replace': '?'},
     {'ansi_num': '&#64;', 'ansi_hex': u'\x40', 'ascii_replace': '@'},
     {'ansi_num': '&#65;', 'ansi_hex': u'\x41', 'ascii_replace': 'A'},
@@ -577,7 +577,7 @@ def escape(s):
 
     return s
 
-def replace_by_mapping(s, from_type, to_type):
+def replace_by_mapping(s, from_type, to_type, skip_list=None):
     s = cast.to_unicode(s)
 
     # print(u'replace_by_mapping(s="{s}", from_type="{ft}", to_type="{tt}"'.format(s=s, ft=from_type, tt=to_type))
@@ -623,6 +623,9 @@ def replace_by_mapping(s, from_type, to_type):
             for k in from_entities:
                 # print(u'  "{s}".replace("{k}", "{v}")'.format(s=s, k=k, v=to_entities[0]))
 
+                if skip_list and k in skip_list:
+                    continue
+
                 s = s.replace(k, to_entities[0])
 
                 # print(u'  s -> {s}'.format(s=s))
@@ -632,7 +635,7 @@ def replace_by_mapping(s, from_type, to_type):
 
     return s
  
-def sub_greeks(s):
+def sub_greeks(s, skip_list=None, mode=None):
     """
     >>> sub_greeks('hi there')
     u'hi there'
@@ -640,8 +643,26 @@ def sub_greeks(s):
     >>> sub_greeks(u'hi\xc2\xa0there')
     u'hi&nbsp;there'
 
+    >>> sub_greeks('<p>hi there</p>')
+    u'&lt;p&gt;hi there&lt;/p&gt;'
+
+    >>> sub_greeks('<p>hi there</p>', skip_list=[u'\x3C', u'\x3E'])
+    u'<p>hi there</p>'
+
+    >>> sub_greeks('<p>hi&mdash;there</p>', mode='html')
+    u'<p>hi&mdash;there</p>'
+
     """
-    s = replace_by_mapping(s, 'ansi_hex', 'html_entity')
+    if mode == "html":
+        if not skip_list:
+            skip_list = []
+
+        # Don't escape ", &, <, or >
+        for k in [u'\x22', u'\x26', u'\x3C', u'\x3E']:
+            if k not in skip_list:
+                skip_list.append(k)
+
+    s = replace_by_mapping(s, 'ansi_hex', 'html_entity', skip_list=skip_list)
 
     return s
    
@@ -832,16 +853,16 @@ def remove_empty_tags(s, tags=('p', 'i', 'em', 'span')):
     '<p>Hi there</p>'
 
     >>> remove_empty_tags('Hi there<p> </p>')
-    'Hi there'
+    'Hi there '
 
     >>> remove_empty_tags('Hi <span> </span>there')
-    'Hi there'
+    'Hi  there'
 
     """
     def _empty_tag_reducer(s, tag):
-        return s.replace("<{tag}>&#160;</{tag}>".format(tag=tag), '')\
-                .replace("<{tag}> </{tag}>".format(tag=tag), '')\
-                .replace("<{tag}></{tag}>".format(tag=tag), '')
+        return s.replace("<{tag}>&#160;</{tag}>".format(tag=tag), ' ')\
+                .replace("<{tag}> </{tag}>".format(tag=tag), ' ')\
+                .replace("<{tag}></{tag}>".format(tag=tag), ' ')
 
     for tag in tags:
         s = _empty_tag_reducer(s, tag)
