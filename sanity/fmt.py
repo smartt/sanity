@@ -823,6 +823,31 @@ def strip_tags(value):
 def nuke_newlines(s):
     return compress_whitespace(s.replace('\n', ' ').replace('\r', ' ').strip())
 
+def remove_empty_tags(s, tags=('p', 'i', 'em', 'span')):
+    """
+    >>> remove_empty_tags('Hi there')
+    'Hi there'
+
+    >>> remove_empty_tags('<p>Hi there</p>')
+    '<p>Hi there</p>'
+
+    >>> remove_empty_tags('Hi there<p> </p>')
+    'Hi there'
+
+    >>> remove_empty_tags('Hi <span> </span>there')
+    'Hi there'
+
+    """
+    def _empty_tag_reducer(s, tag):
+        return s.replace("<{tag}>&#160;</{tag}>".format(tag=tag), '')\
+                .replace("<{tag}> </{tag}>".format(tag=tag), '')\
+                .replace("<{tag}></{tag}>".format(tag=tag), '')
+
+    for tag in tags:
+        s = _empty_tag_reducer(s, tag)
+
+    return s
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
