@@ -296,7 +296,7 @@ ascii_map = [
     {'ansi_num': '&#8220;', 'ansi_hex': (u'\xe2\x80\x9c', u'\x93'), 'html_entity': '&ldquo;'},
     {'ansi_num': '&#8221;', 'ansi_hex': (u'\xe2\x80\x9d', u'\x94'), 'html_entity': '&rdquo;'},
     {'ansi_num': '&#8222;', 'ansi_hex': (u'\xe2\x80\x9e', u'\x84'), 'html_entity': '&bdquo;'},
-    {'ansi_num': '&#8224;', 'ansi_hex': (u'\xe2\x80\xa0', u'\x86'), 'html_entity': '&dagger;'},
+    {'ansi_num': '&#8224;', 'ansi_hex': (u'†', u'\xe2\x80\xa0', u'\x86'), 'html_entity': '&dagger;'},
     {'ansi_num': '&#8225;', 'ansi_hex': (u'\xe2\x80\xa1', u'\x87'), 'html_entity': '&Dagger;'},
     {'ansi_num': '&#8226;', 'ansi_hex': (u'\xe2\x80\xa2', u'\x95'), 'html_entity': '&bull;'},
     {'ansi_num': '&#8230;', 'ansi_hex': (u'\xe2\x80\xa6', u'\x85'), 'html_entity': '&hellip;'},
