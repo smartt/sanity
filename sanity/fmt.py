@@ -8,7 +8,7 @@ import cast
 
 
 __license__ = "MIT"
-__version__ = "0.2"
+__version__ = "0.3"
 __url__ = "http://github.com/smartt/sanity"
 __doc__ = "A collection of misguided hacks."
 
@@ -309,12 +309,11 @@ ascii_map = [
     {'ansi_num': "&#8260;", 'ansi_hex': u'\xe2\x81\x84', 'html_entity': "&frasl;"},
 
     {'ansi_num': '&#8364;', 'ansi_hex': (u'€', u'\xe2\x82\xac', u'\x80'), 'html_entity': '&euro;'},
-    {'ansi_num': '&#8482;', 'ansi_hex': u'\x99', 'html_entity': '&trade;'},
 
     {'ansi_num': "&#8465;", 'ansi_hex': u'\xe2\x84\x91', 'html_entity': "&image;"},
     {'ansi_num': "&#8472;", 'ansi_hex': u'\xe2\x84\x98', 'html_entity': "&weierp;"},
     {'ansi_num': "&#8476;", 'ansi_hex': u'\xe2\x84\x9c', 'html_entity': "&real;"},
-    {'ansi_num': "&#8482;", 'ansi_hex': u'\xef\xa3\xaa', 'html_entity': "&trade;"},
+    {'ansi_num': "&#8482;", 'ansi_hex': (u'™', u'\xef\xa3\xaa'  u'\x99'), 'html_entity': "&trade;"},
 
     {'ansi_num': "&#8501;", 'ansi_hex': u'\xe2\x84\xb5', 'html_entity': "&alefsym;"},
     {'ansi_num': "&#8592;", 'ansi_hex': u'\xe2\x86\x90', 'html_entity': "&larr;"},
@@ -632,25 +631,28 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
 
     return s
  
-def sub_greeks(s, skip_list=None, mode=None, debug=False):
+def hex_to_char_entity(s, skip_list=None, mode=None, debug=False):
     """
-    >>> sub_greeks('hi there')
+    >>> hex_to_char_entity('hi there')
     u'hi there'
 
-    >>> sub_greeks(u'hi\xc2\xa0there')
+    >>> hex_to_char_entity(u'hi\xc2\xa0there')
     u'hi&nbsp;there'
 
-    >>> sub_greeks('<p>hi there</p>')
+    >>> hex_to_char_entity('<p>hi there</p>')
     u'&lt;p&gt;hi there&lt;/p&gt;'
 
-    >>> sub_greeks('<p>hi there</p>', skip_list=[u'\x3C', u'\x3E'])
+    >>> hex_to_char_entity('<p>hi there</p>', skip_list=[u'\x3C', u'\x3E'])
     u'<p>hi there</p>'
 
-    >>> sub_greeks('<p>hi&mdash;there</p>', mode='html')
+    >>> hex_to_char_entity('<p>hi&mdash;there</p>', mode='html')
     u'<p>hi&mdash;there</p>'
 
-    >>> sub_greeks('some &#226;€&#166; text filled with little errors', mode='html', debug=0)
+    >>> hex_to_char_entity('some &#226;€&#166; text filled with little errors', mode='html', debug=0)
     u'some &#226;&euro;&#166; text filled with little errors'
+
+    >>> hex_to_char_entity('Unicode™MAGIK')
+    u'Unicode&trade;MAGIK'
 
     """
     if mode == "html":
@@ -742,8 +744,8 @@ def remove_control_characters(s):
     u'hi there'
 
     This is an odd one:  unicodedata treats '\xad' as category 'Cf', so it gets stripped, but
-    really, it's a valid 'greek' character (as definied in the sub_greeks function, which is 
-    probably poorly named.)  Either way, this means that you probably want to sub_greeks() on
+    really, it's a valid 'hex' character (as definied in the hex_to_char_entity function.)
+    Either way, this means that you probably want to hex_to_char_entity() on
     your string before you send it here.
     >>> remove_control_characters('the Bah\xc3\xa1\u2019\xc3\xad belief')
     u'the Bah\xc3\xa1\u2019\xc3\xad belief'
@@ -753,7 +755,7 @@ def remove_control_characters(s):
 
     return "".join([ch for ch in s if unicodedata.category(ch)[0] != "C"])
 
-def remove_comments(s):
+def remove_comments(s, mode='all'):
     """
     >>> remove_comments(None)
 
@@ -793,18 +795,25 @@ def remove_comments(s):
     >>> remove_comments('<p>Hi There</p><!--[if !mso]>')
     '<p>Hi There</p>'
 
+    >>> remove_comments('<p>Hi There</p><!--[if !mso]> But not this', mode='xml')
+    '<p>Hi There</p> But not this'
+
     """
     if s is None:
         return None
 
-    s = s.replace('//', '#')
+    if mode in ('all',):
+        s = s.split('//')[0]
 
-    s = s.split('#')[0]
+    if mode in ('all',):
+        s = s.split('#')[0]
 
-    s = re.sub(r'/\*.*\*/', '', s)
+    if mode in ('all',):
+        s = re.sub(r'/\*.*\*/', '', s)
 
-    # Remove HTML/XML comments
-    s = re.sub(pattern=r'(<!)([^>]+)(>)', repl='', string=s)
+    if mode in ('all', 'html', 'xml'):
+        # Remove HTML/XML comments
+        s = re.sub(pattern=r'(<!)([^>]+)(>)', repl='', string=s)
 
     return s.strip()
 
@@ -853,6 +862,76 @@ def strip_tags(value):
     except IndexError:
         return s
 
+def remove_tag_and_contents(s, tag=None, tags=None):
+    """
+    >>> remove_tag_and_contents('hi there')
+    'hi there'
+
+    >>> remove_tag_and_contents('<p>hi</p> <style>p {font-weight: 400;}</style><p>there</p>', tag='style')
+    '<p>hi</p> <p>there</p>'
+
+    >>> remove_tag_and_contents('<span class="foo">hi there</span>', tag='span')
+    ''
+
+    >>> remove_tag_and_contents('<p>hi</p> <style>p {font-weight: 400;}</style><p>there</p>', tags=('p', 'style'))
+    ' '
+
+    >>> remove_tag_and_contents('<p>hi <span>there</span></p> <style>p {font-weight: 400;}</style><p>cat</p>', tags=('span', 'style'))
+    '<p>hi </p> <p>cat</p>'
+
+    >>> remove_tag_and_contents('<p>hi <span class="woot">there</span></p> <style>p {font-weight: 400;}</style><p>cat</p>', tags=('span', 'style'))
+    '<p>hi </p> <p>cat</p>'
+
+    >>> remove_tag_and_contents('<p>Hi There<object  classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object></p>', tag='object')
+    '<p>Hi There</p>'
+
+    >>> remove_tag_and_contents('<p>Hi </object>there</p>', tag='object')
+    '<p>Hi there</p>'
+
+    >>> remove_tag_and_contents('<p>Hi <br/>there</p>', tag='br')
+    '<p>Hi there</p>'
+
+    """
+    if tag:
+        tags = [tag]
+
+    if isinstance(tags, (list, tuple)):
+        for t in tags:
+            # Tries to match a normal tag structure
+            s = re.sub(pattern=r'<{tag}.*?>.*?</{tag}>'.format(tag=t), repl='', string=s)
+
+            # Match any hanging opening or closing versions
+            s = re.sub(pattern=r'</{tag}[^>]*>'.format(tag=t), repl='', string=s)
+            s = re.sub(pattern=r'<{tag}[^>]*/ *>'.format(tag=t), repl='', string=s)
+
+    return s
+
+def remove_css_styles(s):
+    """
+    >>> remove_css_styles('hi there')
+    'hi there'
+
+    >>> remove_css_styles('<p>hi</p> <style>p {font-weight: 400;}</style><p>there</p>')
+    '<p>hi</p> <p>there</p>'
+
+    >>> remove_css_styles('<span class="foo">hi there</span>')
+    '<span class="foo">hi there</span>'
+
+    >>> remove_css_styles('<span style="font-weight: bold;" class="foo">hi there</span>')
+    '<span class="foo">hi there</span>'
+
+    >>> remove_css_styles('<span class="foo" style="font-weight: bold;">hi there</span>')
+    '<span class="foo">hi there</span>'
+
+    """
+    # Remove <style> tags..
+    s = remove_tag_and_contents(s, tag='style')
+
+    # Remove inline style attributes..
+    s = re.sub(r'(<[^>]*?)( style="[^"]*")(.*?>)', '\g<1>\g<3>', s)
+
+    return s
+
 def nuke_newlines(s):
     return compress_whitespace(s.replace('\n', ' ').replace('\r', ' ').strip())
 
@@ -896,6 +975,28 @@ def normalize_br_tags(s):
 
     """
     return s.replace("<br>", "<br />").replace("<br/>", "<br />")
+
+def full_html_strip(s):
+    """
+    >>> full_html_strip('<p>Hi&nbsp;there!</p>')
+    u'Hi there!'
+
+    >>> full_html_strip(u'<p>Hi&mdash;there!</p>')
+    u'Hi--there!'
+
+    >>> full_html_strip(u'<p>Hi&trade;there!</p>')
+    u'Hi&#8482;there!'
+
+    """
+    s = hex_to_char_entity(s, mode='html')
+    s = remove_control_characters(s)
+    s = strip_tags(s)
+    s = simplify_entities(s)
+    s = char_entities_to_decimal(s)
+    s = nuke_newlines(s)
+
+    return s
+
 
 ## ---------------------
 if __name__ == "__main__":
