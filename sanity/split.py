@@ -86,6 +86,6 @@ def taxonomy_tags(s, split_spaces=False):
 ## ---------------------
 if __name__ == "__main__":
     import doctest
-    print "Testing..."
+    print "[split.py] Testing..."
     doctest.testmod()
     print "Done."

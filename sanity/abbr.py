@@ -218,7 +218,7 @@ def us_state_for_abbr(s):
 if __name__ == "__main__":
     import doctest
 
-    print('Testing...')
+    print('[abbr.py] Testing...')
 
     doctest.testmod()
 

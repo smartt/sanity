@@ -315,6 +315,6 @@ def zipcode(s):
 ## ---------------------
 if __name__ == "__main__":
     import doctest
-    print "Testing..."
+    print "[extract.py] Testing..."
     doctest.testmod()
     print "Done."

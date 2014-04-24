@@ -1002,7 +1002,7 @@ def full_html_strip(s):
 if __name__ == "__main__":
     import doctest
 
-    print "Testing..."
+    print "[fmt.py] Testing..."
 
     # Run the doctests
     doctest.testmod()
