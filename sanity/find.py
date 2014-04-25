@@ -2,10 +2,6 @@ from datetime import date, timedelta
 
 import extract, fmt
 
-STOPWORDS = ('for', 'at', 'on')
-ADDITION_KEYWORDS = ('salary', 'paycheck')
-
-
 def _prepstr(s):
     """
     >>> _prepstr(s='')
@@ -38,44 +34,47 @@ def dollar_amount(s):
     # Find the amount
     """
     >>> dollar_amount('19.99')
+    (19.99, '')
+
+    >>> dollar_amount('-19.99')
     (-19.99, '')
+
+    >>> dollar_amount('+19.99')
+    (19.99, '')
 
     >>> dollar_amount('$19.99')
-    (-19.99, '')
+    (19.99, '')
 
     >>> dollar_amount('19.99 for coffee')
-    (-19.99, 'for coffee')
+    (19.99, 'for coffee')
 
     >>> dollar_amount('$19.99 for coffee')
-    (-19.99, 'for coffee')
+    (19.99, 'for coffee')
 
     >>> dollar_amount('coffee 19.99')
-    (-19.99, 'coffee')
+    (19.99, 'coffee')
 
     >>> dollar_amount('coffee $19.99')
-    (-19.99, 'coffee')
+    (19.99, 'coffee')
 
     >>> dollar_amount('$19.99 for coffee at 4.20 bar')
-    (-19.99, 'for coffee at 4.20 bar')
+    (19.99, 'for coffee at 4.20 bar')
 
     >>> dollar_amount('4.20 $19.99 wine')
-    (-19.99, '4.20 wine')
+    (19.99, '4.20 wine')
 
-    >>> dollar_amount('19.99 salary')
-    (19.99, 'salary')
+    >>> dollar_amount('sold 1,900.99 comics')
+    (1900.99, 'sold comics')
 
-    >>> dollar_amount('19.99 salary repeats monthly')
-    (19.99, 'salary repeats monthly')
+    >>> dollar_amount('bought $12,345,900.99 comics')
+    (12345900.99, 'bought comics')
 
-    >>> dollar_amount('1,900.99 comics')
-    (-1900.99, 'comics')
-
-    >>> dollar_amount('$12,345,900.99 comics')
-    (-12345900.99, 'comics')
+    >>> dollar_amount('hi there kitty kat')
+    (None, 'hi there kitty kat')
 
     """
     s = _prepstr(s)
-    amt = 0.0
+    amt = None
     matched_amt = ''
 
     # First, split up the string and hunt for price-like things
@@ -88,36 +87,30 @@ def dollar_amount(s):
 
             try:
                 amt = float(str_amt)
-            except:
+            except (TypeError, ValueError):
                 pass
             else:
-                if amt > 0:
+                if amt:
                     matched_amt = chunk
                     break
 
-    if amt == 0.0:
+    if not amt:
         # Keep looking
         for chunk in bits:
             str_amt = extract.price_like(chunk)
 
             try:
                 amt = float(str_amt)
-            except:
+            except (TypeError, ValueError):
                 pass
             else:
-                if amt > 0:
+                if amt:
                     matched_amt = chunk
                     break
 
     # If we found something, remove it from the string
-    if amt > 0.0 or s.find('0.0') >= 0:
+    if amt and matched_amt:
         s = s.replace(matched_amt, '', 1)
-
-    # Adjust the +/- based on tag prefs
-    if reduce(lambda x, y: x or y, [sub in s for sub in ADDITION_KEYWORDS]):
-        pass
-    else:
-        amt *= -1
 
     s = _prepstr(s.replace('$', ''))
 

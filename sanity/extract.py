@@ -149,12 +149,19 @@ def email(s):
 def price_like(s):
     """
     >>> price_like('')
-    ''
+
+    >>> price_like('coffee')
 
     >>> price_like('$19.95')
     '19.95'
 
     >>> price_like('19.95')
+    '19.95'
+
+    >>> price_like('-19.95')
+    '-19.95'
+
+    >>> price_like('+19.95')
     '19.95'
 
     >>> price_like('19.95345')
@@ -170,31 +177,38 @@ def price_like(s):
     '19.00'
 
     >>> price_like('19.5.34')
-    ''
 
     >>> price_like('.19')
     '0.19'
 
     """
     if s.strip() == '':
-        return ''
+        return None
 
     parts = s.split('.')
 
     if not len(parts):  # == 0
         # This shouldn't happen. split() should always return at least a one-item list
-        return ''
+        return None
 
     if len(parts) == 2:
         dollars = just_numbers(parts[0].strip())
         cents = just_numbers(parts[1].strip())
 
+        # We didn't get any numbers
+        if dollars == cents == '':
+            return None
+
     elif len(parts) == 1:
         dollars = just_numbers(parts[0].strip())
         cents = '00'
 
+        # We didn't get any numbers
+        if dollars == '':
+            return None
+
     else:
-        return ''
+        return None
 
     if dollars == '':
         dollars = '0'
@@ -214,7 +228,9 @@ def price_like(s):
         # Change '' to '00'
         cents = '00'
 
-    return "%s.%s" % (dollars, cents)
+    found_amt = "{d}.{c}".format(d=dollars, c=cents)
+
+    return found_amt
 
 def price_like_float(s):
     """
@@ -250,8 +266,8 @@ def price_like_float(s):
     try:
         return float(price_like(s))
 
-    except ValueError:
-        return
+    except (TypeError, ValueError):
+        return None
 
 def zipcode(s):
     """
