@@ -8,7 +8,7 @@ import cast
 
 
 __license__ = "MIT"
-__version__ = "0.3"
+__version__ = "0.3.3"
 __url__ = "http://github.com/smartt/sanity"
 __doc__ = "A collection of misguided hacks."
 
@@ -1396,6 +1396,22 @@ def char_entities_to_decimal(s):
     s = re.sub(r'&([^#])', u'&#38;\g<1>', s)
 
     return s
+   
+def html_to_ascii(s):
+    """
+    >>> html_to_ascii('hi there')
+    u'hi there'
+
+    >>> html_to_ascii('hi &amp; there')
+    u'hi & there'
+
+    >>> html_to_ascii('one &lt; two')
+    u'one < two'
+
+    """    
+    s = replace_by_mapping(s, 'html_entity', 'ascii_replace')
+
+    return s
 
 def simplify_entities(s):
     """
@@ -1682,6 +1698,17 @@ def normalize_br_tags(s):
 
     """
     return s.replace("<br>", "<br />").replace("<br/>", "<br />")
+
+def cleaner_html(s):
+    """
+    >>> cleaner_html('<p>Hi&nbsp;there!</p>')
+    u'<p>Hi&#160;there!</p>'
+    """
+    s = hex_to_char_entity(s, mode='html')
+    s = remove_control_characters(s)
+    s = char_entities_to_decimal(s)
+
+    return s
 
 def full_html_strip(s):
     """
