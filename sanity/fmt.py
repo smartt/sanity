@@ -1723,11 +1723,11 @@ def full_html_strip(s):
 
     """
     s = hex_to_char_entity(s, mode='html')
+    s = nuke_newlines(s)
     s = remove_control_characters(s)
     s = strip_tags(s)
     s = simplify_entities(s)
     s = char_entities_to_decimal(s)
-    s = nuke_newlines(s)
 
     return s
 
