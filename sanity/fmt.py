@@ -1704,6 +1704,7 @@ def cleaner_html(s):
     >>> cleaner_html('<p>Hi&nbsp;there!</p>')
     u'<p>Hi&#160;there!</p>'
     """
+    s = nuke_newlines(s)
     s = hex_to_char_entity(s, mode='html')
     s = remove_control_characters(s)
     s = char_entities_to_decimal(s)
