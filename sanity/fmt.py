@@ -1397,7 +1397,7 @@ def char_entities_to_decimal(s):
 
     return s
    
-def html_to_ascii(s):
+def html_to_ascii(s, skip_list=None):
     """
     >>> html_to_ascii('hi there')
     u'hi there'
@@ -1409,7 +1409,7 @@ def html_to_ascii(s):
     u'one < two'
 
     """    
-    s = replace_by_mapping(s, 'html_entity', 'ascii_replace')
+    s = replace_by_mapping(s, 'html_entity', 'ascii_replace', skip_list=skip_list)
 
     return s
 
