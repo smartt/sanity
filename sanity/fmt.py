@@ -1413,7 +1413,7 @@ def html_to_ascii(s, skip_list=None):
 
     return s
 
-def simplify_entities(s):
+def simplify_entities(s, include_named=True):
     """
     >>> simplify_entities('Hi &nbsp;there!')
     u'Hi  there!'
@@ -1426,12 +1426,6 @@ def simplify_entities(s):
 
     """
     mapping = {
-        u'&nbsp;': ' ',
-        u'&rsquo;': "'",
-        u'&ldquo;': '"',
-        u'&rdquo;': '"',
-        u'&mdash;': '--',
-        u'&ndash;': '-',
         u'\u2013': '-',
         u'\u2014': '--',
         u'\u2018': "'",
@@ -1453,6 +1447,14 @@ def simplify_entities(s):
         u'\\r': '',
         u'\\n': '',
     }
+
+    if include_named:
+        mapping[u'&nbsp;'] = ' '
+        mapping[u'&rsquo;'] = "'"
+        mapping[u'&ldquo;'] = '"'
+        mapping[u'&rdquo;'] = '"'
+        mapping[u'&mdash;'] = '--'
+        mapping[u'&ndash;'] = '-'
 
     s = cast.to_unicode(s)
 
