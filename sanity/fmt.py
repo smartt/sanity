@@ -1408,7 +1408,11 @@ def html_to_ascii(s, skip_list=None):
     >>> html_to_ascii('one &lt; two')
     u'one < two'
 
+    >>> html_to_ascii('hi&#8212; there')
+    u'hi-- there'
+
     """    
+    s = replace_by_mapping(s, 'ansi_num', 'ascii_replace', skip_list=skip_list)
     s = replace_by_mapping(s, 'html_entity', 'ascii_replace', skip_list=skip_list)
 
     return s
