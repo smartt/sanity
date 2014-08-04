@@ -1546,6 +1546,42 @@ def remove_comments(s, mode='all'):
 
     return s.strip()
 
+def scrub_sql(s):
+    """
+    >>> scrub_sql(None)
+
+
+    >>> scrub_sql('hi there')
+    'hi there'
+
+    >>> scrub_sql('foo/')
+    'foo'
+
+    >>> scrub_sql('hi -- there')
+    'hi   there'
+
+    >>> scrub_sql('hi; there')
+    'hi there'
+
+    >>> scrub_sql("hi' WHERE=1")
+    "hi' WHERE=1"
+
+    >>> scrub_sql('hi /* there */')
+    'hi  there'
+
+    >>> scrub_sql("hi@there.com")
+    'hi@there.com'
+
+    >>> scrub_sql("Have you seen López?")
+    'Have you seen L\\xc3\\xb3pez?'
+
+    """
+    if s is None:
+        return None
+
+    s = strip_tags(s).replace(';', '').replace('--', ' ').replace('/', '').replace('*', '').replace('/', '').replace("'", "\'").replace('"', '\"').strip()
+    return s
+
 def strip_tags(value):
     """
     Returns the given HTML with all tags stripped.
