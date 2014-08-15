@@ -1606,6 +1606,9 @@ def strip_tags(value):
     >>> strip_tags("Have you seen López?")
     'Have you seen L\\xc3\\xb3pez?'
 
+    >>> strip_tags("<sc<script>ript>alert('XSS')</sc</script>ript>")
+    'alert('XSS')'
+
     """
     if value == None:
         return None
