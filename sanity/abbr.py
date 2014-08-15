@@ -133,7 +133,6 @@ STATE_MAP = [
     ('Or.', ('Oregon',)),
     ('Ore.', ('Oregon',)),
     ('Oreg.', ('Oregon',)),
-    ('P.P.', ('Rhode Island',)),
     ('PA', ('Pennsylvania',)),
     ('Pa.', ('Pennsylvania',)),
     ('Penn.', ('Pennsylvania',)),
@@ -144,6 +143,7 @@ STATE_MAP = [
     ('PW', ('Palau',)),
     ('RI', ('Rhode Island',)),
     ('R.I.', ('Rhode Island',)),
+    ('P.P.', ('Rhode Island',)),
     ('SC', ('South Carolina',)),
     ('S.C.', ('South Carolina',)),
     ('S. Car.', ('South Carolina',)),
@@ -193,6 +193,9 @@ def _find_entry(s):
     def _flatter(s):
         return s.lower().replace(' ', '').strip()
 
+    if s is None:
+        return None, None
+
     check_str = _flatter(s)
     
     for tup in STATE_MAP:
@@ -227,8 +230,13 @@ def us_state_name(s):
 
     >>> us_state_name('oh hai')
 
+    >>> us_state_name(None)
+    
     >>> us_state_name('PA')
     'Pennsylvania'
+
+    >>> us_state_name('RI')
+    'Rhode Island'
 
     """
     matching_abbr, matching_name = _find_entry(s)
@@ -257,8 +265,13 @@ def us_state_abbr(s):
 
     >>> us_state_abbr('oh hai!')
 
+    >>> us_state_abbr(None)
+
     >>> us_state_abbr('Pennsylvania')
     'PA'
+
+    >>> us_state_abbr('Rhode Island')
+    'RI'
 
     """
     matching_abbr, matching_name = _find_entry(s)
