@@ -1428,6 +1428,15 @@ def simplify_entities(s, include_named=True):
     >>> simplify_entities('here\u2014and there!')
     u'here--and there!'
 
+    >>> simplify_entities('&ldquo;Hi there!&rdquo;')
+    u'"Hi there!"'
+
+    >>> simplify_entities('the word “birdbrain” ever')
+    u'the word "birdbrain" ever'
+
+    >>> simplify_entities('Owl&#8217;s solution is &#8220;birdbrain&#8221;')
+    u'Owl\\'s solution is "birdbrain"'
+
     """
     mapping = {
         u'\u2013': '-',
@@ -1459,6 +1468,9 @@ def simplify_entities(s, include_named=True):
         mapping[u'&rdquo;'] = '"'
         mapping[u'&mdash;'] = '--'
         mapping[u'&ndash;'] = '-'
+        mapping[u'&#8220;'] = '"'
+        mapping[u'&#8221;'] = '"'
+        mapping[u'&#8217;'] = "'"
 
     s = cast.to_unicode(s)
 
