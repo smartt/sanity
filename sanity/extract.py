@@ -182,6 +182,8 @@ def price_like(s):
     '0.19'
 
     """
+    s = str(s)
+
     if s.strip() == '':
         return None
 

@@ -116,13 +116,17 @@ def to_int(arg, default=0):
     except:
         return default
 
-def to_ascii(s):
+def to_ascii(s, replace=''):
     """
     >>> to_ascii('hi there')
     'hi there'
 
     >>> to_ascii('hi €there')
     'hi there'
+
+    Watch what happens here -- a reminder that unicode chars take multiple bytes!
+    >>> to_ascii('hi €there', replace='!')
+    'hi !!!there'
 
     >>> to_ascii(u'hi there')
     'hi there'
@@ -131,7 +135,16 @@ def to_ascii(s):
     'hi&mdash;there'
 
     """
-    return str(''.join([c for c in s if 0 <= ord(c) <= 128]))
+    # return str(''.join([c for c in s if 0 <= ord(c) <= 128]))
+    letters = []
+
+    for c in s:
+        if 0 <= ord(c) <= 128:
+            letters.append(c)
+        else:
+            letters.append(replace)
+
+    return str(''.join(letters))
 
 def to_unicode(s, encoding='utf-8', errors='strict'):
     """

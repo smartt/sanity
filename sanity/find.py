@@ -72,6 +72,12 @@ def dollar_amount(s):
     >>> dollar_amount('hi there kitty kat')
     (None, 'hi there kitty kat')
 
+    >>> dollar_amount('19.12345000001')
+    (19.12, '')
+
+    >>> dollar_amount('19.129')
+    (19.12, '')
+
     """
     s = _prepstr(s)
     amt = None
