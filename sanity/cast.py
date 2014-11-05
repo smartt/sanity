@@ -15,6 +15,9 @@ def to_bool(input):
     >>> to_bool('True')
     True
 
+    >>> to_bool('true')
+    True
+
     >>> to_bool(True)
     True
 
@@ -22,6 +25,9 @@ def to_bool(input):
     False
 
     >>> to_bool('False')
+    False
+
+    >>> to_bool('false')
     False
 
     >>> to_bool('0')
@@ -43,7 +49,7 @@ def to_bool(input):
     if input in (u'0', '0'):
         return False
 
-    elif input in (u'False', 'False'):
+    elif input in (u'False', 'False', u'false', 'false'):
         return False
 
     elif input in (u'off', 'off'):
