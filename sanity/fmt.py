@@ -1098,6 +1098,49 @@ ascii_map = [
 ]
 
 
+def list_as_comma_string(bits, serial_comma=False):
+    """
+    >>> list_as_comma_string([])
+    ''
+
+    >>> list_as_comma_string(['hi'])
+    'hi'
+
+    >>> list_as_comma_string(['hi', 'there'])
+    'hi and there'
+
+    >>> list_as_comma_string(['hi', 'there', 'world'], serial_comma=False)
+    'hi, there and world'
+
+    >>> list_as_comma_string(['hi', 'there', 'world'], serial_comma=True)
+    'hi, there, and world'
+
+    >>> list_as_comma_string(['hi', 'there', 'world', 'invaders'], serial_comma=False)
+    'hi, there, world and invaders'
+
+    >>> list_as_comma_string(['hi', 'there', 'world', 'invaders'], serial_comma=True)
+    'hi, there, world, and invaders'
+
+    """
+    if len(bits) > 2:
+        i = 0
+        # Add a comma after each bit
+        while i < len(bits) :
+            bits[i] = '{bit},'.format(bit=bits[i])
+            i += 1
+
+    # If we have more than one bit, stick the word 'and' between the last two bits
+    if len(bits) > 1:
+        if not serial_comma:
+            # Strip the comma off the second-to-last bit
+            bits[-2] = bits[-2].rstrip(',')
+
+        bits.insert(len(bits)-1, 'and')
+
+    # Since we'll have a comma at the end, strip it off before returning the new string
+    return ' '.join(bits).rstrip(',')
+
+
 def compress_whitespace(s):
     """
     Convert whitespace (ie., spaces, tabs, linebreaks, etc.) to spaces, and
