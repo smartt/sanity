@@ -12,12 +12,12 @@ __version__ = "0.3.3"
 __url__ = "http://github.com/smartt/sanity"
 __doc__ = "A collection of misguided hacks."
 
-# Some of the items in `ascii_map` were seeded using a dictionary found within ReportLab's paraparser.py
+# Some of the items in `ASCII_MAP` were seeded using a dictionary found within ReportLab's paraparser.py
 # library, licensed under a BSD License.  For more, see: http://www.reportlab.com/software/opensource/
 #
 # Other's were found via unicode charts, code generation, and lots of trial and error.
 
-ascii_map = [
+ASCII_MAP = [
     {'ansi_num': '&#32;', 'ansi_hex': u'\x20', 'ascii_replace': ' '},
     {'ansi_num': '&#33;', 'ansi_hex': u'\x21', 'ascii_replace': '!'},
     {'ansi_num': '&#34;', 'ansi_hex': u'\x22', 'ascii_replace': '"', 'html_entity': '&quot;'},
@@ -1097,6 +1097,109 @@ ascii_map = [
     {'ansi_hex': u'\xcf\x91', 'ansi_hex': u'ϑ', 'html_entity': '&thetav;'},
 ]
 
+NUMBER_WORDS = (
+    'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+
+    'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eightteen', 'nineteen',
+
+    'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
+    'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine',
+
+    'thirty', 'thirty-one', 'thirty-two', 'thirty-three', 'thirty-four', 'thirty-five',
+    'thirty-six', 'thirty-seven', 'thirty-eight', 'thirty-nine',
+
+    'fourty', 'fourty-one', 'fourty-two', 'fourty-three', 'fourty-four', 'fourty-five',
+    'fourty-six', 'fourty-seven', 'fourty-eight', 'fourty-nine',
+
+    'fifty', 'fifty-one', 'fifty-two', 'fifty-three', 'fifty-four', 'fifty-five',
+    'fifty-six', 'fifty-seven', 'fifty-eight', 'fifty-nine',
+
+    'sixty', 'sixty-one', 'sixty-two', 'sixty-three', 'sixty-four', 'sixty-five',
+    'sixty-six', 'sixty-seven', 'sixty-eight', 'sixty-nine',
+
+    'seventy', 'seventy-one', 'seventy-two', 'seventy-three', 'seventy-four', 'seventy-five',
+    'seventy-six', 'seventy-seven', 'seventy-eight', 'seventy-nine',
+
+    'eighty', 'eighty-one', 'eighty-two', 'eighty-three', 'eighty-four', 'eighty-five',
+    'eighty-six', 'eighty-seven', 'eighty-eight', 'eighty-nine',
+
+    'ninety', 'ninety-one', 'ninety-two', 'ninety-three', 'ninety-four', 'ninety-five',
+    'ninety-six', 'ninety-seven', 'ninety-eight', 'ninety-nine',
+
+    'one hundred',
+)
+
+def number_as_words(num, limit=100):
+    """
+    >>> number_as_words(None)
+    ''
+
+    >>> number_as_words(0)
+    'zero'
+
+    >>> number_as_words(1)
+    'one'
+
+    >>> number_as_words('1')
+    'one'
+
+    >>> number_as_words('10')
+    'ten'
+
+    >>> number_as_words(42)
+    'fourty-two'
+
+    >>> number_as_words('99')
+    'ninety-nine'
+
+    >>> number_as_words('100')
+    'one hundred'
+
+    >>> number_as_words('101')
+    '101'
+
+    >>> number_as_words('1000', limit=0)
+    'one thousand'
+
+    >>> number_as_words('10000', limit=0)
+    'ten thousand'
+
+    >>> number_as_words('100000', limit=0)
+    'one hundred thousand'
+
+    >>> number_as_words('1000000', limit=0)
+    'one million'
+
+    """
+    global NUMBER_WORDS
+
+    if num is None:
+        return ''
+
+    i = int(num)
+    s = str(num)
+
+    if limit > 0 and i > limit:
+        return s
+
+    if i > 100:
+        if i == 1000:
+            return 'one thousand'
+        elif i == 10000:
+            return 'ten thousand'
+        elif i == 100000:
+            return 'one hundred thousand'
+        elif i == 1000000:
+            return 'one million'
+
+    else:
+        try:
+            return NUMBER_WORDS[i]
+        except:
+            pass
+
+    return s
+
 
 def list_as_comma_string(bits, serial_comma=False):
     """
@@ -1139,7 +1242,6 @@ def list_as_comma_string(bits, serial_comma=False):
 
     # Since we'll have a comma at the end, strip it off before returning the new string
     return ' '.join(bits).rstrip(',')
-
 
 def compress_whitespace(s):
     """
@@ -1324,6 +1426,8 @@ def escape(s):
     return s
 
 def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
+    global ASCII_MAP
+
     s = cast.to_unicode(s)
 
     if debug: print(u'replace_by_mapping(s="{s}", from_type="{ft}", to_type="{tt}"'.format(s=s, ft=from_type, tt=to_type))
@@ -1353,7 +1457,7 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
 
         return default
 
-    for mapping in ascii_map:
+    for mapping in ASCII_MAP:
         from_entities = _get_values_for_key(from_type, mapping)
 
         if not from_entities:
