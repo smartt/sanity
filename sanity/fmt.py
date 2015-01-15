@@ -1108,8 +1108,8 @@ NUMBER_WORDS = (
     'thirty', 'thirty-one', 'thirty-two', 'thirty-three', 'thirty-four', 'thirty-five',
     'thirty-six', 'thirty-seven', 'thirty-eight', 'thirty-nine',
 
-    'fourty', 'fourty-one', 'fourty-two', 'fourty-three', 'fourty-four', 'fourty-five',
-    'fourty-six', 'fourty-seven', 'fourty-eight', 'fourty-nine',
+    'forty', 'forty-one', 'forty-two', 'forty-three', 'forty-four', 'forty-five',
+    'forty-six', 'forty-seven', 'forty-eight', 'forty-nine',
 
     'fifty', 'fifty-one', 'fifty-two', 'fifty-three', 'fifty-four', 'fifty-five',
     'fifty-six', 'fifty-seven', 'fifty-eight', 'fifty-nine',
@@ -1129,10 +1129,53 @@ NUMBER_WORDS = (
     'one hundred',
 )
 
-def number_as_words(num, limit=100):
+def _power_as_word(length):
+    values = (
+        '',
+        '',
+        '',
+        'hundred',
+        'thousand',
+        'thousand',
+        'hundred',
+        'million',
+        'million',
+        'hundred',
+        'billion',
+        'billion',
+        'hundred',
+    )
+
+    try:
+        return values[length]
+    except:
+        return ''
+
+def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     """
+    The default behavior is Chicago style, where numbers <= 100 are
+    spelled-out, along with whole numbers > 100.
+
+    If you want numbers > 100 spelled-out, set `whole_only` = False.
+
+
     >>> number_as_words(None)
     ''
+
+    Non-numbers are returned as-is
+    >>> number_as_words('cat')
+    'cat'
+
+    Floats are returned as-is
+    >>> number_as_words(3.14)
+    3.14
+
+    Unless the don't have a leading zero
+    >>> number_as_words('.14')
+    '0.14'
+
+    >>> number_as_words('.14', add_leading_zero_to_floats=False)
+    '.14'
 
     >>> number_as_words(0)
     'zero'
@@ -1147,7 +1190,7 @@ def number_as_words(num, limit=100):
     'ten'
 
     >>> number_as_words(42)
-    'fourty-two'
+    'forty-two'
 
     >>> number_as_words('99')
     'ninety-nine'
@@ -1158,17 +1201,63 @@ def number_as_words(num, limit=100):
     >>> number_as_words('101')
     '101'
 
-    >>> number_as_words('1000', limit=0)
+    >>> number_as_words('1000')
     'one thousand'
 
-    >>> number_as_words('10000', limit=0)
+    >>> number_as_words('10000')
     'ten thousand'
 
-    >>> number_as_words('100000', limit=0)
+    >>> number_as_words('100000')
     'one hundred thousand'
 
-    >>> number_as_words('1000000', limit=0)
+    >>> number_as_words('1000000')
     'one million'
+
+    >>> number_as_words('2000')
+    'two thousand'
+
+    >>> number_as_words('2001')
+    '2001'
+
+    >>> number_as_words('2,001')
+    '2001'
+
+    >>> number_as_words('2001', whole_only=False)
+    'two thousand one'
+
+    >>> number_as_words('2,001', whole_only=False)
+    'two thousand one'
+
+    >>> number_as_words('2342', whole_only=False)
+    'two thousand three hundred forty-two'
+
+    >>> number_as_words('21,342', whole_only=False)
+    'twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('421,342', whole_only=False)
+    'four hundred twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('5,421,342', whole_only=False)
+    'five million four hundred twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('15,421,342', whole_only=False)
+    'fifteen million four hundred twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('715,421,342', whole_only=False)
+    'seven hundred fifteen million four hundred twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('2,715,421,342', whole_only=False)
+    'two billion seven hundred fifteen million four hundred twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('40,715,421,342', whole_only=False)
+    'forty billion seven hundred fifteen million four hundred twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('540,715,421,342', whole_only=False)
+    'five hundred forty billion seven hundred fifteen million four hundred twenty-one thousand three hundred forty-two'
+
+    That's far enough
+    >>> number_as_words('1,540,715,421,342', whole_only=False)
+    '1,540,715,421,342'
 
     """
     global NUMBER_WORDS
@@ -1176,21 +1265,136 @@ def number_as_words(num, limit=100):
     if num is None:
         return ''
 
-    i = int(num)
-    s = str(num)
+    try:
+        s = str(num).replace(',', '')
+    except:
+        return num
 
-    if limit > 0 and i > limit:
+    if s.find('.') == 0:
+        # This might be a float, but we should add a leading zero
+        if add_leading_zero_to_floats is True:
+            return '0{num}'.format(num=s)
+        else:
+            return s
+
+    elif s.find('.') >= 0:
+        # This might be a float that we can't work with
+        return num
+
+    try:
+        i = int(s)
+    except:
         return s
 
     if i > 100:
-        if i == 1000:
-            return 'one thousand'
-        elif i == 10000:
-            return 'ten thousand'
-        elif i == 100000:
-            return 'one hundred thousand'
-        elif i == 1000000:
-            return 'one million'
+        if whole_only is True:
+            remainder = s[1:]
+
+            if remainder.replace('0', '') == '':
+                # Then it should be in words
+                bits = []
+
+                if remainder == '00':
+                    bits.append(number_as_words(s[0:1]))
+                    bits.append('hundred')
+
+                elif remainder == '000':
+                    bits.append(number_as_words(s[0:1]))
+                    bits.append('thousand')
+
+                elif remainder == '0000':
+                    bits.append(number_as_words(s[0:2]))
+                    bits.append('thousand')
+
+                elif remainder == '00000':
+                    bits.append(number_as_words(s[0:3]))
+                    bits.append('thousand')
+
+                elif remainder == '000000':
+                    bits.append(number_as_words(s[0:1]))
+                    bits.append('million')
+
+                elif remainder == '0000000':
+                    bits.append(number_as_words(s[0:2]))
+                    bits.append('million')
+
+                elif remainder == '00000000':
+                    bits.append(number_as_words(s[0:3]))
+                    bits.append('million')
+
+                elif remainder == '000000000':
+                    bits.append(number_as_words(s[0:1]))
+                    bits.append('billion')
+
+                elif remainder == '0000000000':
+                    bits.append(number_as_words(s[0:2]))
+                    bits.append('billion')
+
+                elif remainder == '00000000000':
+                    bits.append(number_as_words(s[0:3]))
+                    bits.append('billion')
+
+                return ' '.join(bits)
+
+        else:
+            # Build a string from the number, no matter what the size
+            bits = []
+            l = len(s)
+
+            if l == 3:
+                bits.append(number_as_words(s[0:1]))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:3]))
+
+            elif l == 4:
+                bits.append(number_as_words(s[0:1], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:], whole_only=whole_only))
+
+            elif l == 5:
+                bits.append(number_as_words(s[0:2], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[2:], whole_only=whole_only))
+
+            elif l == 6:
+                bits.append(number_as_words(s[0:1], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:], whole_only=whole_only))
+
+            elif l == 7:
+                bits.append(number_as_words(s[0:1], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:], whole_only=whole_only))
+
+            elif l == 8:
+                bits.append(number_as_words(s[0:2], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[2:], whole_only=whole_only))
+
+            elif l == 9:
+                bits.append(number_as_words(s[0:1], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:], whole_only=whole_only))
+
+            elif l == 10:
+                bits.append(number_as_words(s[0:1], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:], whole_only=whole_only))
+
+            elif l == 11:
+                bits.append(number_as_words(s[0:2], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[2:], whole_only=whole_only))
+
+            elif l == 12:
+                bits.append(number_as_words(s[0:1], whole_only=whole_only))
+                bits.append(_power_as_word(l))
+                bits.append(number_as_words(s[1:], whole_only=whole_only))
+
+            else:
+                return num
+
+            return ' '.join(bits)
 
     else:
         try:
@@ -1199,7 +1403,6 @@ def number_as_words(num, limit=100):
             pass
 
     return s
-
 
 def list_as_comma_string(bits, serial_comma=False):
     """
