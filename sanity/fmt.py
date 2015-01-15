@@ -2139,6 +2139,44 @@ def full_html_strip(s):
 
     return s
 
+def substitute_pattern_with_char(s, pattern, repl_char='x'):
+    """
+    This is a little different than re.sub(). It replaces all the characters
+    that match the pattern with an equal number of `repl_char` characters.
+
+    The resulting string should be the same length as the starting string.
+
+    >>> substitute_pattern_with_char(s='Hi there', pattern=r'[a-z]+', repl_char='x')
+    'Hx xxxxx'
+
+    >>> substitute_pattern_with_char(s='With 42 cats', pattern=r'[\d]+', repl_char='x')
+    'With xx cats'
+
+    """
+    matches = re.findall(pattern=pattern, string=s)
+
+    for m in matches:
+        s = s.replace(m, ''.join([repl_char for i in range(0, len(m))]))
+
+    return s
+
+def substitute_patterns_with_char(s, patterns, repl_char='x'):
+    """
+    Like substitute_pattern_with_char, but takes a list of patterns.
+
+    The resulting string should be the same length as the starting string.
+
+    >>> substitute_patterns_with_char(s='Hi there', patterns=[r'[a-z]+'], repl_char='x')
+    'Hx xxxxx'
+
+    >>> substitute_patterns_with_char(s='With 42 cats', patterns=[r'[\d]+'], repl_char='x')
+    'With xx cats'
+
+    """
+    for pat in patterns:
+        s = substitute_pattern_with_char(s=s, pattern=pat, repl_char=repl_char)
+
+    return s
 
 ## ---------------------
 if __name__ == "__main__":

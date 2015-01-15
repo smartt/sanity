@@ -332,6 +332,29 @@ def zipcode(s):
         
     return z
 
+def matching_pattern_but_not_others(s, pattern, others):
+    """
+    @param    s          String to process
+    @param    pattern    Regex pattern matching the thing(s) we want.
+    @param    others     Iterable containing regex patterns matching things we don't want.
+
+    @returns  List of matches
+
+    This test extracts numbers that aren't followed by an uppercase character:
+    >>> matching_pattern_but_not_others(s='Hi 42 there 22B cars', pattern=r'[\d]+', others=[r'[\d]+[A-B]'])
+    ['42']
+
+    >>> matching_pattern_but_not_others(s='Hi 42 there 42B cars', pattern=r'[\d]+', others=[r'[\d]+[A-B]'])
+    ['42']
+
+    """
+    # Reduce the string, eliminating the sub-strings that match acceptable patterns
+    s = fmt.substitute_patterns_with_char(s, patterns=others, repl_char='x')
+
+    # Then look for the desired pattern
+    return re.findall(pattern=pattern, string=s)
+
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
