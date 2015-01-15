@@ -17,11 +17,13 @@ def date_by_pattern(s, pattern, return_match_str=False):
     >>> date_by_pattern('4/20/2014', '%m/%d/%Y')
     datetime.date(2014, 4, 20)
 
+    # This will fail in 2016...
     >>> date_by_pattern('4/20', '%m/%d')
-    datetime.date(2014, 4, 20)
+    datetime.date(2015, 4, 20)
 
+    # This will fail in 2016...
     >>> date_by_pattern('4.20', '%m.%d')
-    datetime.date(2014, 4, 20)
+    datetime.date(2015, 4, 20)
 
     >>> date_by_pattern('420', '%m/%d')
 

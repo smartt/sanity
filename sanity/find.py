@@ -128,13 +128,13 @@ def calendar_date(s):
     (datetime.date(2014, 4, 20), '')
 
     >>> calendar_date('coffee on 4/20')
-    (datetime.date(2014, 4, 20), 'coffee on')
+    (datetime.date(2015, 4, 20), 'coffee on')
 
     >>> calendar_date('3.53 for coffee on 4/20')
-    (datetime.date(2014, 4, 20), '3.53 for coffee on')
+    (datetime.date(2015, 4, 20), '3.53 for coffee on')
 
     >>> calendar_date('3.53 for coffee on 4.20')
-    (datetime.date(2014, 4, 20), '3.53 for coffee on')
+    (datetime.date(2015, 4, 20), '3.53 for coffee on')
 
     """
     def _sub_dayofweek(dow, num, s):
