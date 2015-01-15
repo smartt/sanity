@@ -1220,7 +1220,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     '2001'
 
     >>> number_as_words('2,001')
-    '2001'
+    '2,001'
 
     >>> number_as_words('2001', whole_only=False)
     'two thousand one'
@@ -1275,7 +1275,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
         if add_leading_zero_to_floats is True:
             return '0{num}'.format(num=s)
         else:
-            return s
+            return num
 
     elif s.find('.') >= 0:
         # This might be a float that we can't work with
@@ -1284,7 +1284,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     try:
         i = int(s)
     except:
-        return s
+        return num
 
     if i > 100:
         if whole_only is True:
@@ -1402,7 +1402,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
         except:
             pass
 
-    return s
+    return num
 
 def list_as_comma_string(bits, serial_comma=False):
     """
