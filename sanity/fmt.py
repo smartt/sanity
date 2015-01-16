@@ -2152,10 +2152,15 @@ def substitute_pattern_with_char(s, pattern, repl_char='x'):
     >>> substitute_pattern_with_char(s='With 42 cats', pattern=r'[\d]+', repl_char='x')
     'With xx cats'
 
-    """
-    matches = re.findall(pattern=pattern, string=s)
+    >>> substitute_pattern_with_char(s='With 42 cats and 12 dogs', pattern=r'[\d]+', repl_char='x')
+    'With xx cats and xx dogs'
 
-    for m in matches:
+    >>> substitute_pattern_with_char(s='With 42 cats and 12 dogs', pattern=r'[\d]+\s+(cat[s]?|bird[s]?)', repl_char='x')
+    'With xxxxxxx and 12 dogs'
+
+    """
+    for mo in re.finditer(pattern=pattern, string=s):
+        m = mo.group(0)
         s = s.replace(m, ''.join([repl_char for i in range(0, len(m))]))
 
     return s
