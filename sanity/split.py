@@ -17,6 +17,8 @@ def on_pattern(r, s):
     Returns a list of tuples, containing a sub-string and a boolean
     indicating whether or not the sub-string matched the regex.
 
+    NOTE: YOU CANNOT PASS A PATTERN WITH GROUPINGS!!! THE RESULTS WILL BE WHACK.
+
     >>> on_pattern(r'\s', 'hi there')
     [('hi', False), (' ', True), ('there', False)]
 
@@ -25,6 +27,14 @@ def on_pattern(r, s):
 
     >>> on_pattern(r'[0-9]+', '[555] 555-5555')
     [('[', False), ('555', True), ('] ', False), ('555', True), ('-', False), ('5555', True)]
+
+    # This will work, but it's misleading
+    #>>> on_pattern(r'(mid|non|pre|re|semi|under|over)\-\w+', 'hithere')
+    #[('hithere', False)]
+
+    # This will totally fail
+    #>>> on_pattern(r'(mid|non|pre|re|semi|under|over)\-\w+', 'It was non-relevant indeed')
+    #[('It was ', False), ('non-relevant', True), (' indeed', False)]
 
     """
     bits_that_match = re.findall(r, s)
