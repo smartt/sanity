@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from inspect import isfunction
 import re
 import unicodedata
 
@@ -2183,10 +2184,10 @@ def substitute_patterns_with_char(s, patterns, repl_char='x'):
 
     return s
 
-def sub_with_exclusion_patterns(find_pattern, replace_pattern, s, exclusion_patterns):
+def sub_with_exclusion_patterns(find_pattern, replace_with, s, exclusion_patterns):
     """
     @param    find_pattern        Regex used to find.
-    @param    replace_pattern     Regex used to replace.
+    @param    replace_with        Regex or Function used to replace. If a function, it will be called using the matched characters.
     @param    s                   String to replace characters within.
     @param    exclusion_patterns  Regex patterns used to mask areas that should not be used during the find/replace.
 
@@ -2200,6 +2201,10 @@ def sub_with_exclusion_patterns(find_pattern, replace_pattern, s, exclusion_patt
     # into escapes somehow. Blame doctest I think.
     # >>> sub_with_exclusion_patterns(r'([A-Z])(\w+)', r'\2\1', 'The Brown Fox Jumped over the Lazy Moon.', (r'[JM]',))
     # -->  This is the correct response, which works outside of doctest: 'heT rownB oxF Jumped over the azyL Moon.'
+
+    >>> def sayhi(s): return 'HAI'
+    >>> sub_with_exclusion_patterns(r'cat', sayhi, 'His cat bought six more cats.', (r'cats',))
+    'His HAI bought six more cats.'
 
     """
     # First, use the exclusion_patterns to mask the string
@@ -2227,10 +2232,13 @@ def sub_with_exclusion_patterns(find_pattern, replace_pattern, s, exclusion_patt
             search_in_string = search_in_string[pos + len(m):]
 
             # Find out what to replace it with
-            replace_with = re.sub(find_pattern, replace_pattern, m)
+            if isfunction(replace_with):
+                replace_result = replace_with(m)
+            else:
+                replace_result = re.sub(find_pattern, replace_with, m)
 
             # Add the replacement to bits
-            bits.append(replace_with)
+            bits.append(replace_result)
 
         else:
             # Append the rest of the string
