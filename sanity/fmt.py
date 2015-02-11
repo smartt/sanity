@@ -2179,8 +2179,9 @@ def substitute_patterns_with_char(s, patterns, repl_char='x'):
     'With xx cats'
 
     """
-    for pat in patterns:
-        s = substitute_pattern_with_char(s=s, pattern=pat, repl_char=repl_char)
+    if patterns is not None:
+        for pat in patterns:
+            s = substitute_pattern_with_char(s=s, pattern=pat, repl_char=repl_char)
 
     return s
 
