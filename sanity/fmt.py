@@ -2183,6 +2183,67 @@ def substitute_patterns_with_char(s, patterns, repl_char='x'):
 
     return s
 
+def sub_with_exclusion_patterns(find_pattern, replace_pattern, s, exclusion_patterns):
+    """
+    @param    find_pattern        Regex used to find.
+    @param    replace_pattern     Regex used to replace.
+    @param    s                   String to replace characters within.
+    @param    exclusion_patterns  Regex patterns used to mask areas that should not be used during the find/replace.
+
+    >>> sub_with_exclusion_patterns(r'cat', r'CAT', 'His cat bought six more cats.', (r'cats',))
+    'His CAT bought six more cats.'
+
+    >>> sub_with_exclusion_patterns(r'\d', r'oh hai', 'He bought 6 more 22Bs.', (r'\d+\w+',))
+    'He bought oh hai more 22Bs.'
+
+    # This one fails because something is happening to the replace patterns' match codes which is turning them
+    # into escapes somehow. Blame doctest I think.
+    # >>> sub_with_exclusion_patterns(r'([A-Z])(\w+)', r'\2\1', 'The Brown Fox Jumped over the Lazy Moon.', (r'[JM]',))
+    # -->  This is the correct response, which works outside of doctest: 'heT rownB oxF Jumped over the azyL Moon.'
+
+    """
+    # First, use the exclusion_patterns to mask the string
+    # s might be: 'He bought 6 more 22Bs.'
+    tmp = substitute_patterns_with_char(s, patterns=exclusion_patterns, repl_char='x')
+    # now tmp might be: 'He bought 6 more xxBs.'
+
+    # with the IGNORE patterns replaced with x's, we can now look for the remaining numbers
+    bits = []
+    working_string = s
+    search_in_string = tmp
+
+    for mo in re.finditer(find_pattern, tmp):
+        m = mo.group(0)
+
+        # Find the first match
+        pos = search_in_string.find(m)
+
+        if pos >= 0:
+            # Append the clean (original) part of the string up until this point
+            bits.append(working_string[0:pos])
+
+            # Trim the string to strip off what we're already processed
+            working_string = working_string[pos + len(m):]
+            search_in_string = search_in_string[pos + len(m):]
+
+            # Find out what to replace it with
+            replace_with = re.sub(find_pattern, replace_pattern, m)
+
+            # Add the replacement to bits
+            bits.append(replace_with)
+
+        else:
+            # Append the rest of the string
+            bits.append(working_string[0:])
+            break
+
+    else:
+        # Append the remainder
+        bits.append(working_string[0:])
+
+    return ''.join(bits)
+
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
