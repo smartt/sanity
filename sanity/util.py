@@ -2,12 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-__license__ = "MIT"
-__version__ = "0.1"
-__url__ = "http://github.com/smartt/sanity"
-__doc__ = "A collection of misguided hacks."
-
-
 def find_nonascii_line_in_file(file_name):
     line_count = 1
     char_count = 0

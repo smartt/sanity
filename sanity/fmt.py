@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from inspect import isfunction
 from numeraltable import NUMBER_WORDS
 from uniasciitable import ASCII_MAP
@@ -31,6 +30,86 @@ def _power_as_word(length):
         return values[length]
     except:
         return ''
+
+def _number_power(n, c=0):
+    """
+    This is an odd one, for sure. Given a number, we return a tuple that tells us
+    the numerical format to use.  It makes a little more sense if you think of
+    the second number in the tuple as a pointer into the list:
+        ('', 'hundred', 'thousand', 'million', ...)
+
+    ...so, given the input, '100', we return (1, 1), which can be read as (1, 'hundred')
+
+    This could easily have been a lookup table of reasonable size,
+    but what's the fun of that when we can use recursion?
+
+    >>> _number_power('1')
+    (1, 0)
+
+    >>> _number_power('10')
+    (10, 0)
+
+    >>> _number_power('23')
+    (10, 0)
+
+    >>> _number_power('100')
+    (1, 1)
+
+    >>> _number_power('200')
+    (1, 1)
+
+    >>> _number_power('1000')
+    (1, 2)
+
+    >>> _number_power('1234')
+    (1, 2)
+
+    >>> _number_power('10000')
+    (10, 2)
+
+    >>> _number_power('100000')
+    (100, 2)
+
+    >>> _number_power('987654')
+    (100, 2)
+
+    >>> _number_power('1000000')
+    (1, 3)
+
+    >>> _number_power('10000000')
+    (10, 3)
+
+    >>> _number_power('100000000')
+    (100, 3)
+
+    >>> _number_power('1000000000')
+    (1, 4)
+
+    """
+    s = str(n)
+    # Regardless of the number passed-in, we only want a leading '1' followed by a string of '0's.
+    bits = ['1']
+    for ch in s:
+      bits.append('0')
+
+    s = ''.join(bits[:-1])
+    
+    n = int(s)
+    l = len(s)
+      
+    if l > 3:
+        num, new_c = _number_power(s[:-3], c + 1)
+      
+        return (num, new_c)
+      
+    elif n == 100:
+        return (100 if c > 0 else 1, c + 1)
+
+    elif n == 10:
+        return (10, c + 1 if c > 0 else 0)
+
+    else:
+        return (1, c + 1 if c > 0 else 0)
 
 def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     """
@@ -84,6 +163,9 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     >>> number_as_words('1000')
     'one thousand'
 
+    >>> number_as_words('1500')
+    'fifteen hundred'
+
     >>> number_as_words('10000')
     'ten thousand'
 
@@ -113,6 +195,12 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
 
     >>> number_as_words('21,342', whole_only=False)
     'twenty-one thousand three hundred forty-two'
+
+    >>> number_as_words('23000')
+    'twenty-three thousand'
+
+    >>> number_as_words('23001')
+    '23001'
 
     >>> number_as_words('421,342', whole_only=False)
     'four hundred twenty-one thousand three hundred forty-two'
@@ -170,7 +258,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
         return num
 
     # We cheat with numbers under 100--we use a look-up table :-)
-    if i <= 100:
+    if i <= 101:
         try:
             return NUMBER_WORDS[i]
         except:
@@ -181,61 +269,42 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
         # are still under 100.  Ex., Given the number 23,000, the non-zero leading bits are '23',
         # so this can be converted.  A number like 23,456 would not (unless the caller has requested
         # to disable the `whole_only` flag.
-        non_zero_bit = int(s.rstrip('0'))
-        remainder = s.lstrip(str(non_zero_bit))
+        # 
+        # Given s == 100000...
+        non_zero_bit = s.rstrip('0')  # == '1'
+        remainder = s[len(non_zero_bit):]  # == '00000'
+        non_zero_int = int(non_zero_bit)  # == 1
 
-        is_whole = False
-        if len(remainder) > 0:
-            if len(remainder.replace('0', '')) == 0:
-                is_whole = True
+        if non_zero_int < 100:  # == yes
+            is_whole = True
+        else:
+            is_whole = False
+
+        leading_tens, multiple = _number_power('1{remain}'.format(remain=remainder))  # == 100, 2
+        leading_str = str(leading_tens)  # == '100'
+
+        # If the leading_str is longer than the non_zero_bit, then we need to slice
+        # off a larger non_zero_bit.  Ex., given 10000, our non_zero_bit would start 
+        # as '1', but the leading_str would be '10' (so we can return 'ten thousand'.)
+        if len(leading_str) > len(non_zero_bit):  # == yes
+            non_zero_bit = s[0:len(leading_str)]  # == '100'
+            non_zero_int = int(non_zero_bit)  # == 100
 
         if whole_only is True:
-            if non_zero_bit < 100 and is_whole:
-                if remainder.replace('0', '') == '':
-                    # Then it should be in words
-                    bits = []
+            if non_zero_int < 101 and is_whole:
+                bits = []
+                bits.append(number_as_words(non_zero_bit))
 
-                    if remainder == '00':
-                        bits.append(number_as_words(s[0:1]))
-                        bits.append('hundred')
+                if multiple == 1:
+                    bits.append('hundred')
+                elif multiple == 2:
+                    bits.append('thousand')
+                elif multiple == 3:
+                    bits.append('million')
+                elif multiple == 4:
+                    bits.append('billion')
 
-                    elif remainder == '000':
-                        bits.append(number_as_words(s[0:1]))
-                        bits.append('thousand')
-
-                    elif remainder == '0000':
-                        bits.append(number_as_words(s[0:2]))
-                        bits.append('thousand')
-
-                    elif remainder == '00000':
-                        bits.append(number_as_words(s[0:3]))
-                        bits.append('thousand')
-
-                    elif remainder == '000000':
-                        bits.append(number_as_words(s[0:1]))
-                        bits.append('million')
-
-                    elif remainder == '0000000':
-                        bits.append(number_as_words(s[0:2]))
-                        bits.append('million')
-
-                    elif remainder == '00000000':
-                        bits.append(number_as_words(s[0:3]))
-                        bits.append('million')
-
-                    elif remainder == '000000000':
-                        bits.append(number_as_words(s[0:1]))
-                        bits.append('billion')
-
-                    elif remainder == '0000000000':
-                        bits.append(number_as_words(s[0:2]))
-                        bits.append('billion')
-
-                    elif remainder == '00000000000':
-                        bits.append(number_as_words(s[0:3]))
-                        bits.append('billion')
-
-                    return ' '.join(bits)
+                return ' '.join(bits)
 
         else:
             # Build a string from the number, no matter what the size

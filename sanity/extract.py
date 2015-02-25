@@ -340,7 +340,8 @@ def matching_pattern_but_not_others(s, pattern, others):
 
     @returns  List of matches
 
-    This test extracts numbers that aren't followed by an uppercase character:
+    This test extracts numbers that aren't followed by an uppercase character: (And yes, you'd be
+    better off using a look-ahead pattern for this instead, hence this is just a contrived example.)
     >>> matching_pattern_but_not_others(s='Hi 42 there 22B cars', pattern=r'[\d]+', others=[r'[\d]+[A-B]'])
     ['42']
 

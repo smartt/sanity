@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import re
 
 import fmt
-
-__license__ = "MIT"
-__version__ = "0.2"
-__url__ = "http://github.com/smartt/sanity"
-__doc__ = "A collection of misguided hacks."
 
 
 def on_pattern(r, s):

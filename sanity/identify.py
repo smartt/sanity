@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import re
+
 
 def is_only_numeric(s, *args, **kwargs):
     """
