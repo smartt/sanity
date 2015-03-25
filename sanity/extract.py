@@ -122,14 +122,23 @@ def just_numbers(s, decimals=False):
 
     return output
 
-def email(s, limit=1):
+def email(s, limit=1, liberal=False):
     """
     >>> email("hi@there.com")
     'hi@there.com'
 
+    # Two dots is invalid...
     >>> email("hi@there..com")
 
+    # ...but the liberal parser will allow it. This is handy if you plan on
+    # doing some cleanup/validation later anyway.
+    >>> email("hi@there..com", liberal=True)
+    'hi@there..com'
+
     >>> email("hi@there")
+
+    >>> email("hi@there", liberal=True)
+    'hi@there'
 
     >>> email("some text, and address hi@there.com and more text")
     'hi@there.com'
@@ -140,9 +149,12 @@ def email(s, limit=1):
     >>> email("Hi There <hi@there.com>")
     'hi@there.com'
 
+    # For backwards compatibility, the default behaviour is to return
+    # the first found address...
     >>> email("Hi There <hi@there.com> and foo@bar.co.uk")
     'hi@there.com'
 
+    # ...but you can return more. A limit of zero means to return all.
     >>> email("Hi There <hi@there.com> and foo@bar.co.uk", limit=0)
     ['hi@there.com', 'foo@bar.co.uk']
 
@@ -156,7 +168,12 @@ def email(s, limit=1):
     results = []
     hits = 0
 
-    matches = re.findall(r'\b<?(\w[\w\.-]*)@(\w+)(\.\w+)(\.\w*)?>?\b', s)
+    if liberal:
+        pattern = r'\b<?(\w[\w\.-]*)@([\w\.]+)>?\b'
+    else:
+        pattern = r'\b<?(\w[\w\.-]*)@(\w+)(\.\w+)(\.\w*)?>?\b'
+
+    matches = re.findall(pattern, s)
 
     for t in matches:
         try:
