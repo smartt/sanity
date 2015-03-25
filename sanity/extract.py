@@ -122,10 +122,14 @@ def just_numbers(s, decimals=False):
 
     return output
 
-def email(s):
+def email(s, limit=1):
     """
     >>> email("hi@there.com")
     'hi@there.com'
+
+    >>> email("hi@there..com")
+
+    >>> email("hi@there")
 
     >>> email("some text, and address hi@there.com and more text")
     'hi@there.com'
@@ -136,17 +140,44 @@ def email(s):
     >>> email("Hi There <hi@there.com>")
     'hi@there.com'
 
-    >>> email("one hi@there.com and another foo@bar.com address")
+    >>> email("Hi There <hi@there.com> and foo@bar.co.uk")
     'hi@there.com'
 
-    """
-    # Pattern from https://developers.google.com/edu/python/regular-expressions
-    mo = re.search(r'([\w.-]+)@([\w.-]+)', s.replace('<', ' ').replace('>', ' '))
+    >>> email("Hi There <hi@there.com> and foo@bar.co.uk", limit=0)
+    ['hi@there.com', 'foo@bar.co.uk']
 
-    if mo:
-        return '{front}@{back}'.format(front=mo.group(1), back=mo.group(2))
-    else:
+    >>> email("one hi@there.com and another foo@bar.com address", limit=0)
+    ['hi@there.com', 'foo@bar.com']
+
+    >>> email("one hi@there.com and another foo@bar.com address", limit=7)
+    ['hi@there.com', 'foo@bar.com']
+
+    """
+    results = []
+    hits = 0
+
+    matches = re.findall(r'\b<?(\w[\w\.-]*)@(\w+)(\.\w+)(\.\w*)?>?\b', s)
+
+    for t in matches:
+        try:
+            addy = '{front}@{back}'.format(front=t[0], back=''.join(t[1:]))
+        except:
+            pass
+        else:
+            results.append(addy)
+            hits += 1
+
+    if hits == 0:
         return None
+
+    elif hits == 1 or limit == 1:
+        return results[0]
+
+    else:
+        if limit > 0:
+            return results[:limit]
+        else:
+            return results
 
 def price_like(s):
     """
