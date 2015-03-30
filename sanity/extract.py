@@ -122,9 +122,12 @@ def just_numbers(s, decimals=False):
 
     return output
 
-def email(s, limit=1, liberal=False):
+def email(s, limit=1, liberal=False, clean=False, assume_tld='com'):
     """
     >>> email("hi@there.com")
+    'hi@there.com'
+
+    >>> email("hi@THERE.COM")
     'hi@there.com'
 
     # Two dots is invalid...
@@ -135,10 +138,20 @@ def email(s, limit=1, liberal=False):
     >>> email("hi@there..com", liberal=True)
     'hi@there..com'
 
+    # ...and the cleaner can clean it
+    >>> email("hi@there..com", liberal=True, clean=True)
+    'hi@there.com'
+
     >>> email("hi@there")
 
     >>> email("hi@there", liberal=True)
     'hi@there'
+
+    >>> email("hi@there", liberal=True, clean=True)
+    'hi@there.com'
+
+    >>> email("hi@there", liberal=True, clean=True, assume_tld='net')
+    'hi@there.net'
 
     >>> email("some text, and address hi@there.com and more text")
     'hi@there.com'
@@ -177,10 +190,19 @@ def email(s, limit=1, liberal=False):
 
     for t in matches:
         try:
-            addy = '{front}@{back}'.format(front=t[0], back=''.join(t[1:]))
+            addy = '{front}@{back}'.format(front=t[0], back=''.join(t[1:]).lower())
         except:
             pass
         else:
+            if clean:
+                addy = re.sub(r'\.+', '.', addy)
+
+                # A lame way to look for what might be a TDL
+                might_be_tdls = re.findall(r'\.\w+$', addy)
+
+                if len(might_be_tdls) == 0:
+                    addy = '{base}.{tdl}'.format(base=addy, tdl=assume_tld)
+
             results.append(addy)
             hits += 1
 
