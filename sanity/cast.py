@@ -218,6 +218,6 @@ def to_latin_one(s):
 ## ---------------------
 if __name__ == "__main__":
     import doctest
-    print "[cast.py] Testing..."
+    print("[cast.py] Testing...")
     doctest.testmod()
-    print "Done."
+    print("Done.")

@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "f:", ['file=', 'nonascii'])
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         print(str(err))
         sys.exit(2)
 

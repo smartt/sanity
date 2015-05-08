@@ -429,6 +429,6 @@ def matching_pattern_but_not_others(s, pattern, others):
 ## ---------------------
 if __name__ == "__main__":
     import doctest
-    print "[extract.py] Testing..."
+    print("[extract.py] Testing...")
     doctest.testmod()
-    print "Done."
+    print("Done.")

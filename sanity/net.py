@@ -24,6 +24,6 @@ def ip_for_hostname(s):
 # --------------------------------------------------
 if __name__ == "__main__":
     import doctest
-    print "[net.py] Testing..."
+    print("[net.py] Testing...")
     doctest.testmod()
-    print "Done."
+    print("Done.")

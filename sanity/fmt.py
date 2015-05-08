@@ -1219,7 +1219,7 @@ def sub_with_exclusion_patterns(find_pattern, replace_with, s, exclusion_pattern
 if __name__ == "__main__":
     import doctest
 
-    print "[fmt.py] Testing..."
+    print("[fmt.py] Testing...")
 
     # Run the doctests
     doctest.testmod()
@@ -1232,5 +1232,5 @@ if __name__ == "__main__":
     assert nuke_newlines(s) == "This is a test"
 
     # Woot!
-    print "Done."
+    print("Done.")
 

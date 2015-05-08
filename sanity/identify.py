@@ -55,7 +55,7 @@ def is_only_whitespace(s, *args, **kwargs):
 ## ---------------------
 if __name__ == "__main__":
     import doctest
-    print "[is.py] Testing..."
+    print("[is.py] Testing...")
     doctest.testmod()
-    print "Done."
+    print("Done.")
 
