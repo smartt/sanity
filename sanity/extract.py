@@ -423,6 +423,13 @@ def matching_pattern_but_not_others(s, pattern, others):
 
 def snippet(keywords, txt, preserve_order=False, before=3, after=3):
     """
+    Given a block of text, extract the shortest snippet containing the single, or two-closest, supplied keywords.
+
+    @param   keywords         Iterable The keywords to search for.
+    @param   txt              String   Text to search within.
+    @param   preserve_order   Bool     True if the order of keywords matters. Default is False.
+    @param   before           Integer  The number of words before the first keyword to include. Default is 3.
+    @param   after            Integer  The number of words after the first keyword to include. Default is 3.
 
     >>> t = "The domestic cat is a small, usually furry, domesticated, and carnivorous mammal. They are often called a housecat when kept as an indoor pet or simply a cat when there is no need to distinguish them from other felids and felines. Cats are often valued by humans for companionship and their ability to hunt vermin and household pests."
 
