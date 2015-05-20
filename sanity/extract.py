@@ -7,10 +7,6 @@ import re
 import cast
 import fmt
 
-__license__ = "MIT"
-__version__ = "0.1"
-__url__ = "http://github.com/smartt/sanity"
-__doc__ = "A collection of misguided hacks."
 
 def date_by_pattern(s, pattern, return_match_str=False):
     """
