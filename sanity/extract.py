@@ -469,6 +469,14 @@ def snippet(keywords, txt, preserve_order=False, before=3, after=3):
     >>> snippet(keywords=['when', 'and', 'cat'], txt=t)
     'or simply a cat when there is no'
 
+    # To show that we can handle the end of a string (where 'after' would overflow.)
+    >>> snippet(keywords=['vermin', 'pests'], txt=t)
+    'ability to hunt vermin and household pests.'
+
+    # To show that we can handle the beginning of a string (where 'before' would overflow.)
+    >>> snippet(keywords=['The', 'cat'], txt=t)
+    'The domestic cat is a small,'
+
     """
     # First, make sure `keywords` is iterable
     if not hasattr(keywords, '__iter__'):
