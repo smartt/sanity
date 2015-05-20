@@ -425,6 +425,174 @@ def matching_pattern_but_not_others(s, pattern, others):
     # Then look for the desired pattern
     return re.findall(pattern=pattern, string=s)
 
+def snippet(keywords, txt, preserve_order=False, before=3, after=3):
+    """
+
+    >>> t = "The domestic cat is a small, usually furry, domesticated, and carnivorous mammal. They are often called a housecat when kept as an indoor pet or simply a cat when there is no need to distinguish them from other felids and felines. Cats are often valued by humans for companionship and their ability to hunt vermin and household pests."
+
+    # With one keyword, we return the first instance
+    >>> snippet(keywords='cat', txt=t)
+    'The domestic cat is a small,'
+
+    # Multiple keywords is better
+    >>> snippet(keywords=['indoor', 'cat'], txt=t)
+    'kept as an indoor pet or simply a cat when there is'
+
+    # When only one word is found...
+    >>> snippet(keywords=['cat', 'dog'], txt=t)
+    'The domestic cat is a small,'
+
+    >>> snippet(keywords=['dog', 'cat'], txt=t)
+    'The domestic cat is a small,'
+
+    >>> snippet(keywords=['indoor', 'cat'], txt=t, before=1, after=1)
+    'an indoor pet or simply a cat when'
+
+    # When not found, return an empty string
+    >>> snippet(keywords=['dog'], txt=t)
+    ''
+
+    >>> snippet(keywords=['and', 'cats'], txt=t)
+    'from other felids and felines. Cats are often valued'
+
+    >>> snippet(keywords=['cats', 'and'], txt=t)
+    'from other felids and felines. Cats are often valued'
+
+    >>> snippet(keywords=['cats', 'and'], txt=t, preserve_order=True, before=0, after=0)
+    'Cats are often valued by humans for companionship and'
+
+    # This is an interesting case. We'll be returning the snippet with the shortest
+    # distance between any two words in the list.
+    >>> snippet(keywords=['when', 'and', 'cat'], txt=t)
+    'or simply a cat when there is no'
+
+    """
+    # First, make sure `keywords` is iterable
+    if not hasattr(keywords, '__iter__'):
+        keywords = (keywords,)
+
+    # If we have no keywords, we're done.
+    if len(keywords) == 0:
+        return ''
+
+    # Normalize the text we're working with.
+    no_whitespace_txt = fmt.compress_whitespace(txt)
+
+    # We keep a sliced version with punctuation to use when building the snippet.
+    sliced_txt = no_whitespace_txt.split(' ')
+
+    # We also want a version of the string with no punctuation so that punctuation isn't
+    # confusing the string matching.
+    working_txt = fmt.remove_punctuation(no_whitespace_txt)
+
+    bits = [s.lower() for s in working_txt.split(' ')]
+
+    # We're going a build a structure like this:
+    #
+    # {
+    #     '<word>': [<pos>, <pos>, <pos>],
+    #     ...
+    # }
+    #
+    # ...where 'word' is a word in the `working_txt`, and `pos` is an integer
+    # indicating the position(s) that said word can be found in the string.
+    tree = dict()
+    start = None
+    end = None
+
+    for pos, word in enumerate(bits):
+        try:
+            tree[word].append(pos)
+        except KeyError:
+            tree[word] = [pos]
+
+    # Now, let's remove any keywords that aren't even in the text. This may simplify the lookup.
+    usable_keywords = []
+    for key in keywords:
+        try:
+            _ = tree[key]
+        except KeyError:
+            continue
+        else:
+            usable_keywords.append(key)
+
+    # Let's handle the single-keyword case first:
+    if len(usable_keywords) == 1:
+        try:
+            pos = tree[usable_keywords[0]][0]
+        except (IndexError, KeyError):
+            # The word wasn't found
+            return ''
+        else:
+            start = pos
+            # Add 1 to move past the keyword
+            end = pos + 1
+
+    else:
+        # Now that we know where each word is, let's find the shortest distances between
+        # the keywords
+        closest = None
+
+        for pos, key in enumerate(usable_keywords):
+            if pos == len(usable_keywords):
+                # We're at the end of the list
+                break
+
+            # No need to catch KeyError since we've already eliminated non-existant keys
+            key_word_positions = tree[key]
+
+            compare_to_words = usable_keywords[pos+1:]
+
+            for other_word in compare_to_words:
+                # print('compare', key, 'with', other_word)
+
+                other_word_positions = tree[other_word]
+                # print(key_word_positions, other_word_positions)
+
+                for p1 in key_word_positions:
+                    last_distance = None
+
+                    for p2 in other_word_positions:
+                        distance = abs(p1 - p2)  # Use abs() to keep the number positive
+                        # print('distance between:', p1, p2, 'is:', distance,'last:', last_distance)
+
+                        if last_distance is not None and distance > last_distance:
+                            # then we're not going to get any closer
+                            break
+
+                        if closest is None or distance < closest:
+                            if preserve_order and p2 < p1:
+                                continue
+
+                            closest = distance
+
+                            if p1 <= p2:
+                                start = p1
+                                end = p2 + 1  # To skip the keyword
+                            else:
+                                start = p2
+                                end = p1 + 1  # To skip the keyword
+
+                        last_distance = distance
+
+        # print('closest is', closest, 'slice:', start, end)
+
+    # If we didn't find a slice...
+    if start is None or end is None:
+        return ''
+
+    # Expand the indexes to include the before and after words
+    start = start - before
+    end = end + after
+
+    if start < 0:
+        start = 0
+
+    if start > len(sliced_txt):
+        end = len(sliced_txt)
+
+    return ' '.join(sliced_txt[start:end])
+
 
 ## ---------------------
 if __name__ == "__main__":
