@@ -870,6 +870,25 @@ def remove_comments(s, mode='all'):
 
     return s.strip()
 
+def remove_punctuation(s):
+    """
+    NOTE: We're not yet removing unicode representations of punctuation, nor
+    en- and em-dashes. This is currently best for basic, ASCII text.
+
+    >>> remove_punctuation('')
+    ''
+
+    >>> remove_punctuation('Hi there. I, and, we like cats!')
+    'Hi there I and we like cats'
+
+    """
+    punks = ('.', ',', ';', ':', '!', '?', '(', ')', '-', '"', "'")
+
+    for p in punks:
+        s = s.replace(p, '')
+
+    return s
+
 def scrub_sql(s):
     """
     >>> scrub_sql(None)
