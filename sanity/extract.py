@@ -421,6 +421,42 @@ def matching_pattern_but_not_others(s, pattern, others):
     # Then look for the desired pattern
     return re.findall(pattern=pattern, string=s)
 
+def word_index(txt):
+    """
+    We're going a build a structure like this:
+    
+    {
+        '<word>': [<pos>, <pos>, <pos>],
+        ...
+    }
+    
+    ...where 'word' is a word in the `txt`, and `pos` is an integer
+    indicating the position(s) that said word can be found in the string.
+
+    >>> word_index('The cat likes cat treats.')
+    {'the': [0], 'treats': [4], 'likes': [2], 'cat': [1, 3]}
+
+    """
+    tree = dict()
+
+    # Normalize the text we're working with.
+    compressed_whitespace_txt = fmt.compress_whitespace(txt)
+
+    # We also want a version of the string with no punctuation so that punctuation isn't
+    # confusing the string matching.
+    working_txt = fmt.remove_punctuation(compressed_whitespace_txt)
+
+    # Now split on spaces, lowercasing all words in the process.
+    bits = [s.lower() for s in working_txt.split(' ')]
+
+    for pos, word in enumerate(bits):
+        try:
+            tree[word].append(pos)
+        except KeyError:
+            tree[word] = [pos]
+
+    return tree
+
 def snippet(keywords, txt, preserve_order=False, before=3, after=3):
     """
     Given a block of text, extract the shortest snippet containing the single, or two-closest, supplied keywords.
@@ -486,36 +522,14 @@ def snippet(keywords, txt, preserve_order=False, before=3, after=3):
     if len(keywords) == 0:
         return ''
 
-    # Normalize the text we're working with.
-    no_whitespace_txt = fmt.compress_whitespace(txt)
-
     # We keep a sliced version with punctuation to use when building the snippet.
-    sliced_txt = no_whitespace_txt.split(' ')
+    sliced_txt = fmt.compress_whitespace(txt).split(' ')
 
-    # We also want a version of the string with no punctuation so that punctuation isn't
-    # confusing the string matching.
-    working_txt = fmt.remove_punctuation(no_whitespace_txt)
+    # Now we use the text to create an index-table of words by position.
+    tree = word_index(txt)
 
-    bits = [s.lower() for s in working_txt.split(' ')]
-
-    # We're going a build a structure like this:
-    #
-    # {
-    #     '<word>': [<pos>, <pos>, <pos>],
-    #     ...
-    # }
-    #
-    # ...where 'word' is a word in the `working_txt`, and `pos` is an integer
-    # indicating the position(s) that said word can be found in the string.
-    tree = dict()
     start = None
     end = None
-
-    for pos, word in enumerate(bits):
-        try:
-            tree[word].append(pos)
-        except KeyError:
-            tree[word] = [pos]
 
     # Now, let's remove any keywords that aren't even in the text. This may simplify the lookup.
     usable_keywords = []
