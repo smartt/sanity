@@ -595,10 +595,12 @@ def escape(s):
 def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
     s = cast.to_unicode(s)
 
-    if debug: print(u'replace_by_mapping(s="{s}", from_type="{ft}", to_type="{tt}"'.format(s=s, ft=from_type, tt=to_type))
+    if __debug__:
+        if debug: print(u'replace_by_mapping(s="{s}", from_type="{ft}", to_type="{tt}"'.format(s=s, ft=from_type, tt=to_type))
 
     def _get_values_for_key(k, mapping, default=None):
-        if debug: print('_get_values_for_key(k={k}, mapping={m}, default={d})'.format(k=k, m=mapping, d=default))
+        if __debug__:
+            if debug: print('_get_values_for_key(k={k}, mapping={m}, default={d})'.format(k=k, m=mapping, d=default))
 
         if k in mapping:
             # Ultimately, we're trying to get a list of elements
@@ -606,18 +608,21 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
 
             if isinstance(val, (str, unicode)):
                 # Create a list from a single element
-                if debug: print('    -> casting to a list and returning val')
+                if __debug__:
+                    if debug: print('    -> casting to a list and returning val')
                 return [val]
 
             elif isinstance(val, (tuple, list)):
                 # Just keep the list
-                if debug: print('    -> returning val')
+                if __debug__:
+                    if debug: print('    -> returning val')
                 return val
 
             else:
-                if debug: print('    -> WTF! val: {v} is of type: {t}'.format(v=val, t=type(val)))
+                if __debug__:
+                    if debug: print('    -> WTF! val: {v} is of type: {t}'.format(v=val, t=type(val)))
 
-        else:
+        elif __debug__:
             if debug: print('    -> NO KEY; returning {d}'.format(d=default))
 
         return default
@@ -628,24 +633,28 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
         if not from_entities:
             continue
 
-        if debug: print(u'  using from_entities: {l}'.format(l=from_entities))
+        if __debug__:
+            if debug: print(u'  using from_entities: {l}'.format(l=from_entities))
         
         to_entities = _get_values_for_key(to_type, mapping, default=None)
 
         if to_entities is not None:
-            if debug: print('  using to_entities: {l}'.format(l=to_entities))
+            if __debug__:
+                if debug: print('  using to_entities: {l}'.format(l=to_entities))
 
             for k in from_entities:
-                if debug: print(u'  "{s}".replace("{k}", "{v}")'.format(s=s, k=k, v=to_entities[0]))
+                if __debug__:
+                    if debug: print(u'  "{s}".replace("{k}", "{v}")'.format(s=s, k=k, v=to_entities[0]))
 
                 if skip_list and k in skip_list:
                     continue
 
                 s = s.replace(k, to_entities[0])
 
-                if debug: print(u'  s -> {s}'.format(s=s))
+                if __debug__:
+                    if debug: print(u'  s -> {s}'.format(s=s))
 
-        else:
+        elif __debug__:
             if debug: print('  SKIP')
 
     return s
