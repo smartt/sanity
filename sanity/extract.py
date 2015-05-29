@@ -49,6 +49,7 @@ def date_by_pattern(s, pattern, return_match_str=False):
     else:
         return d
 
+
 def just_numbers(s, decimals=False):
     """
     >>> just_numbers(123)
@@ -117,6 +118,7 @@ def just_numbers(s, decimals=False):
         pass
 
     return output
+
 
 def email(s, limit=1, liberal=False, clean=False, assume_tld='com'):
     """
@@ -214,6 +216,7 @@ def email(s, limit=1, liberal=False, clean=False, assume_tld='com'):
         else:
             return results
 
+
 def price_like(s):
     """
     >>> price_like('')
@@ -302,6 +305,7 @@ def price_like(s):
 
     return found_amt
 
+
 def price_like_float(s):
     """
     >>> price_like_float('')
@@ -338,6 +342,7 @@ def price_like_float(s):
 
     except (TypeError, ValueError):
         return None
+
 
 def zipcode(s):
     """
@@ -398,6 +403,7 @@ def zipcode(s):
         
     return z
 
+
 def matching_pattern_but_not_others(s, pattern, others):
     """
     @param    s          String to process
@@ -420,6 +426,7 @@ def matching_pattern_but_not_others(s, pattern, others):
 
     # Then look for the desired pattern
     return re.findall(pattern=pattern, string=s)
+
 
 def word_index(txt):
     """
@@ -456,6 +463,7 @@ def word_index(txt):
             tree[word] = [pos]
 
     return tree
+
 
 def snippet(keywords, txt, preserve_order=False, before=3, after=3):
     """
@@ -617,6 +625,85 @@ def snippet(keywords, txt, preserve_order=False, before=3, after=3):
         end = len(sliced_txt)
 
     return ' '.join(sliced_txt[start:end])
+
+
+def word_frequency(s, word):
+    """Return the number of times `word` is found in `s`.
+
+    >>> word_frequency("The big cat caught a big mouse", "dog")
+    0
+
+    >>> word_frequency("The big cat caught a big mouse", "cat")
+    1
+
+    >>> word_frequency("The big cat caught a big mouse", "big")
+    2
+
+    >>> word_frequency("The big cat caught a big catfish", "big")
+    2
+
+    """
+    # normalize to lowercase with no punctuation
+    s = fmt.remove_punctuation(s.lower())
+    word = word.lower()
+
+    # Neat Python feature that let's us split on a word. By breaking the string using the word, we
+    # can deduce how often it was found.
+    bits = s.split(word)
+
+    hit_count = len(bits) - 1
+
+    if hit_count < 0:
+        return 0
+    else:
+        return hit_count
+
+
+def top_word_frequency(s, minimum=1, limit=30, exclude=None):
+    """Return a structure containing the top `limit` number of words used in the document by their frequency of use.
+
+    @param    s            String    The text to process.
+    @param    minimum      Int       The lower limit a word must occur more than to be in the results. Default 1.
+    @param    limit        Int       The maximum number of words to return. Default 30.
+    @param    exclude      Iterable  A list of words to exclude from the results. Default None.
+
+    >>> top_word_frequency("")
+    []
+
+    >>> top_word_frequency("The big cat caught a big mouse")
+    [('big', 2)]
+
+    >>> top_word_frequency("The big cat caught a big mouse", exclude=['big'])
+    []
+
+    >>> top_word_frequency("The big cat caught a big mouse that the dog liked because it looked like a cat.")
+    [('a', 2), ('big', 2), ('cat', 2), ('the', 2)]
+
+
+    >>> top_word_frequency("Sea shells on the sea shore make the sea home to sea shells.", exclude=['the', 'cat'])
+    [('shells', 2), ('sea', 4)]
+
+    """
+    if not hasattr(exclude, '__iter__'):
+        exclude = ()
+
+    results = []
+
+    # We'll leverage our word_index structure which returns a dictionary keyed by words, pointing at a list of positions in the text.
+    # We'll count the number of positions to compute frequecy.
+    d = word_index(s)
+
+    # Now we iterate, skipping the lower-bounds, and converting into a list of tuples
+    for k, v in d.items():
+        if k in exclude:
+            continue
+
+        count = len(v)
+        if count > minimum:
+            results.append((k, count))
+
+    # Return sorted list with up to `limit` items.
+    return sorted(results, key=lambda x: x[1])[:limit]
 
 
 ## ---------------------
