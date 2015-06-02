@@ -681,7 +681,7 @@ def top_word_frequency(s, minimum=1, limit=30, exclude=None):
 
 
     >>> top_word_frequency("Sea shells on the sea shore make the sea home to sea shells.", exclude=['the', 'cat'])
-    [('shells', 2), ('sea', 4)]
+    [('sea', 4), ('shells', 2)]
 
     """
     if not hasattr(exclude, '__iter__'):
@@ -703,7 +703,7 @@ def top_word_frequency(s, minimum=1, limit=30, exclude=None):
             results.append((k, count))
 
     # Return sorted list with up to `limit` items.
-    return sorted(results, key=lambda x: x[1])[:limit]
+    return sorted(results, key=lambda x: x[1], reverse=True)[:limit]
 
 
 ## ---------------------
