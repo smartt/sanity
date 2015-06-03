@@ -760,7 +760,7 @@ def top_line_lenths(s, limit=30):
     [(6, 1)]
 
     >>> top_line_lenths("Hi there. This is pretty nice. I guess I could use it somewhere.")
-    [(2, 1), (4, 1), (7, 1)]
+    [(7, 1), (4, 1), (2, 1)]
 
     >>> top_line_lenths("Hi there. This is pretty nice. Another four words here.")
     [(4, 2), (2, 1)]
@@ -789,7 +789,7 @@ def top_line_lenths(s, limit=30):
         results.append((k, v))
 
     # Return sorted list with up to `limit` items.
-    return sorted(results, key=lambda x: x[1], reverse=True)[:limit]
+    return sorted(results, key=lambda x: x[0], reverse=True)[:limit]
 
     return results
 
