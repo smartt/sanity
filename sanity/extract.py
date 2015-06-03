@@ -6,6 +6,7 @@ import re
 
 import cast
 import fmt
+import split
 
 
 def date_by_pattern(s, pattern, return_match_str=False):
@@ -118,6 +119,49 @@ def just_numbers(s, decimals=False):
         pass
 
     return output
+
+
+def number_range(s):
+    """We're looking for <num>-<num>.
+
+    >>> number_range("There were 9-10 cats.")
+    (9, 10)
+
+    >>> number_range("There cats were 4 and up.")
+    (4, None)
+
+    >>> number_range("There were 7+ cats.")
+    (7, None)
+
+    """
+    lower = None
+    upper = None
+
+    # Start with the easy pattern
+    mo = re.search(ur'\b([\d\,\.]+)\s*[-–]\s*([\d\,\.]+)\b', s)
+
+    try:
+        lower = int(mo.group(1))
+        upper = int(mo.group(2))
+
+    except:
+        # Try the '2+' pattern
+        mo = re.search(r'\b([\d\,\.]+)\s*\+(?!\d)', s)
+
+        try:
+            lower = int(mo.group(1))
+
+        except:
+            # Try the '2 and up' pattern.
+            mo = re.search(r'\b([\d\,\.]+)\s+and\s+up\b', s)
+
+            try:
+                lower = int(mo.group(1))
+
+            except:
+                pass
+
+    return (lower, upper)
 
 
 def email(s, limit=1, liberal=False, clean=False, assume_tld='com'):
@@ -704,6 +748,50 @@ def top_word_frequency(s, minimum=1, limit=30, exclude=None):
 
     # Return sorted list with up to `limit` items.
     return sorted(results, key=lambda x: x[1], reverse=True)[:limit]
+
+
+def top_line_lenths(s, limit=30):
+    """Return structure showing the top-`limit` line lengths along with their frequency.
+
+    >>> top_line_lenths("")
+    []
+
+    >>> top_line_lenths("Hi there; this is pretty nice.")
+    [(6, 1)]
+
+    >>> top_line_lenths("Hi there. This is pretty nice. I guess I could use it somewhere.")
+    [(2, 1), (4, 1), (7, 1)]
+
+    >>> top_line_lenths("Hi there. This is pretty nice. Another four words here.")
+    [(4, 2), (2, 1)]
+
+    """
+    results = []
+
+    bits = split.sentences(s)
+
+    d = dict()
+
+    # Make something like:
+    # {
+    #   <line_length>: <count>,
+    # }
+
+    for line in bits:
+        words = line.split(' ')
+
+        try:
+            d[len(words)] += 1
+        except:
+            d[len(words)] = 1
+
+    for k, v in d.items():
+        results.append((k, v))
+
+    # Return sorted list with up to `limit` items.
+    return sorted(results, key=lambda x: x[1], reverse=True)[:limit]
+
+    return results
 
 
 ## ---------------------
