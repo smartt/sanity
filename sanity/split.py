@@ -295,6 +295,12 @@ def sentences(s):
     >>> sentences("Hello World. I am a cat.")
     ['Hello World.', 'I am a cat.']
 
+    >>> sentences("Hello World. I am Mr. cat.")
+    ['Hello World.', 'I am Mr. cat.']
+
+    >>> sentences("Hello World. I am Dr.C.A.T. cat.")
+    ['Hello World.', 'I am Dr.C.A.T. cat.']
+
     """
     # These are known trouble-maker patterns, given the period and the likelyhood that the next character
     # will be capitalized.  In other words, to a basic parser, they look like the end of a sentence.
@@ -311,7 +317,7 @@ def sentences(s):
 
     new_troublemakers = _find_troublemakers(s)
 
-    for k, v in new_troublemakers:
+    for k, v in new_troublemakers.items():
         trouble_slugs[k] = v
 
     slugged_s = _slug_trouble_makers(s, trouble_slugs)
