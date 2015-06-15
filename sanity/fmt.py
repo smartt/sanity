@@ -160,8 +160,26 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     >>> number_as_words('101')
     '101'
 
+    >>> number_as_words('110')
+    '110'
+
+    >>> number_as_words('190')
+    '190'
+
+    >>> number_as_words('200')
+    'two hundred'
+
+    >>> number_as_words('260')
+    '260'
+
+    >>> number_as_words('600')
+    'six hundred'
+
     >>> number_as_words('1000')
     'one thousand'
+
+    >>> number_as_words('1520')
+    '1520'
 
     >>> number_as_words('1500')
     'fifteen hundred'
@@ -275,7 +293,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
         remainder = s[len(non_zero_bit):]  # == '00000'
         non_zero_int = int(non_zero_bit)  # == 1
 
-        if non_zero_int < 100:  # == yes
+        if non_zero_int < 100 and len(remainder) > 1:  # == yes
             is_whole = True
         else:
             is_whole = False
