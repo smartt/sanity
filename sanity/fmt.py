@@ -2,11 +2,16 @@
 # -*- coding: utf-8 -*-
 from inspect import isfunction
 from numeraltable import NUMBER_WORDS
-from uniasciitable import ASCII_MAP
 import re
 import unicodedata
 
 import cast
+from uniasciitable import ASCII_MAP
+
+
+RE_TAG = re.compile(r'<[^>]*?>')
+RE_TAG_PARA_BR = re.compile(r'<[\s\/]*(p|br)[\s\/]*>')
+RE_WHITESPACE = re.compile(r'\s+')
 
 
 def _power_as_word(length):
@@ -30,6 +35,7 @@ def _power_as_word(length):
         return values[length]
     except:
         return ''
+
 
 def _number_power(n, c=0):
     """
@@ -110,6 +116,7 @@ def _number_power(n, c=0):
 
     else:
         return (1, c + 1 if c > 0 else 0)
+
 
 def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
     """
@@ -258,14 +265,15 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
 
     # This technically isn't going to return a word, but it will help format
     # the float to be more Chicago-compliant:
-    if s.find('.') == 0:
+    decimal_pos = s.find('.')
+    if decimal_pos == 0:
         # This might be a float, but we should add a leading zero
         if add_leading_zero_to_floats is True:
             return '0{num}'.format(num=s)
         else:
             return num
 
-    elif s.find('.') >= 0:
+    elif decimal_pos >= 0:
         # This might be a float that we can't work with
         return num
 
@@ -386,6 +394,7 @@ def number_as_words(num, whole_only=True, add_leading_zero_to_floats=True):
 
     return num
 
+
 def list_as_comma_string(bits, serial_comma=False):
     """
     >>> list_as_comma_string([])
@@ -428,6 +437,7 @@ def list_as_comma_string(bits, serial_comma=False):
     # Since we'll have a comma at the end, strip it off before returning the new string
     return ' '.join(bits).rstrip(',')
 
+
 def compress_whitespace(s):
     """
     Convert whitespace (ie., spaces, tabs, linebreaks, etc.) to spaces, and
@@ -442,18 +452,16 @@ def compress_whitespace(s):
     >>> compress_whitespace("hi@there.com")
     'hi@there.com'
 
-    >>> compress_whitespace("  hi   @ there . com")
+    >>> compress_whitespace("  hi   @ there . com ")
     'hi @ there . com'
 
     """
-    # Sanity check
-    if (len(s) == 0):
-        return ''
+    # Using the pre-compiled pattern is a bit faster when calling
+    # multiple times.  (Well, millions of times... ;-)
+    global RE_WHITESPACE
 
-    s = re.sub(r'\s', ' ', s)
-    s = re.sub(r' +', ' ', s)
+    return RE_WHITESPACE.sub(' ', s.strip())
 
-    return s.strip()
 
 def strip_and_compact_str(s):
     """
@@ -502,6 +510,7 @@ def strip_and_compact_str(s):
 
     return s
 
+
 def super_flat(s):
     """
     >>> super_flat('')
@@ -518,6 +527,7 @@ def super_flat(s):
         return ''
 
     return slugify(s).upper().replace('-', '')
+
 
 def slugify(s):
     """
@@ -543,6 +553,7 @@ def slugify(s):
     value = re.sub('[-\s]+', '-', value)
     value = re.sub('[_\s]+', '-', value)
     return value
+
 
 def add_leading_padding(s, char=' ', target_length=-1):
     """
@@ -586,6 +597,7 @@ def add_leading_padding(s, char=' ', target_length=-1):
     
     return z
 
+
 def escape(s):
     """
     Returns the given string with ampersands, quotes and carets encoded.
@@ -609,6 +621,7 @@ def escape(s):
         s = s.replace(tup[0], tup[1])
 
     return s
+
 
 def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
     s = cast.to_unicode(s)
@@ -677,6 +690,7 @@ def replace_by_mapping(s, from_type, to_type, skip_list=None, debug=False):
 
     return s
  
+
 def hex_to_char_entity(s, skip_list=None, mode=None, debug=False):
     """
     >>> hex_to_char_entity('hi there')
@@ -714,6 +728,7 @@ def hex_to_char_entity(s, skip_list=None, mode=None, debug=False):
 
     return s
    
+
 def char_entities_to_decimal(s):
     """
     >>> char_entities_to_decimal('hi there')
@@ -736,6 +751,7 @@ def char_entities_to_decimal(s):
 
     return s
    
+
 def html_to_ascii(s, skip_list=None):
     """
     >>> html_to_ascii('hi there')
@@ -755,6 +771,7 @@ def html_to_ascii(s, skip_list=None):
     s = replace_by_mapping(s, 'html_entity', 'ascii_replace', skip_list=skip_list)
 
     return s
+
 
 def simplify_entities(s, include_named=True):
     """
@@ -818,6 +835,7 @@ def simplify_entities(s, include_named=True):
 
     return s
 
+
 def remove_control_characters(s):
     """
     >>> remove_control_characters('hi there')
@@ -834,6 +852,7 @@ def remove_control_characters(s):
     s = cast.to_unicode(s)
 
     return "".join([ch for ch in s if unicodedata.category(ch)[0] != "C"])
+
 
 def remove_comments(s, mode='all'):
     """
@@ -897,6 +916,7 @@ def remove_comments(s, mode='all'):
 
     return s.strip()
 
+
 def remove_punctuation(s):
     """
     NOTE: We're not yet removing unicode representations of punctuation, nor
@@ -915,6 +935,7 @@ def remove_punctuation(s):
         s = s.replace(p, '')
 
     return s
+
 
 def scrub_sql(s):
     """
@@ -950,7 +971,9 @@ def scrub_sql(s):
         return None
 
     s = strip_tags(s).replace(';', '').replace('--', ' ').replace('/', '').replace('*', '').replace('/', '').replace("'", "\'").replace('"', '\"').strip()
+
     return s
+
 
 def strip_tags(value):
     """
@@ -967,6 +990,9 @@ def strip_tags(value):
     >>> strip_tags('<i>oh hai.</i><i>goodbye</i>')
     'oh hai.goodbye'
 
+    >>> strip_tags('<i>oh hai.<br /></i><b>Hello, <i>goodbye</i></b>')
+    'oh hai. Hello, goodbye'
+
     >>> strip_tags("hi@there.com")
     'hi@there.com'
 
@@ -981,14 +1007,19 @@ def strip_tags(value):
     #'alert('XSS')'
 
     """
+    global RE_TAG, RE_TAG_PARA_BR
+
     if value == None:
         return None
 
     if not isinstance(value, (str, unicode)):
         return value
 
-    s = re.sub(r'<\/?p>', ' ', value)
-    s = re.sub(r'<[^>]*?>', '', s)
+    # Replace paragraph tags with spaces...
+    # s = RE_TAG_BR.sub(' ', value)
+    s = RE_TAG_PARA_BR.sub(' ', value)
+    # Remove all remaining tags
+    s = RE_TAG.sub('', s)
 
     try:
         # If the original string had leading or trailing spaces, leave them be
@@ -1000,6 +1031,7 @@ def strip_tags(value):
 
     except IndexError:
         return s
+
 
 def remove_tag_and_contents(s, tag=None, tags=None):
     """
@@ -1045,6 +1077,7 @@ def remove_tag_and_contents(s, tag=None, tags=None):
 
     return s
 
+
 def remove_css_styles(s):
     """
     >>> remove_css_styles('hi there')
@@ -1071,8 +1104,10 @@ def remove_css_styles(s):
 
     return s
 
+
 def nuke_newlines(s):
     return compress_whitespace(s.replace('\n', ' ').replace('\r', ' ').strip())
+
 
 def remove_empty_tags(s, tags=('p', 'i', 'em', 'span')):
     """
@@ -1099,6 +1134,7 @@ def remove_empty_tags(s, tags=('p', 'i', 'em', 'span')):
 
     return s
 
+
 def normalize_br_tags(s):
     """
     I like 'em this way.
@@ -1115,6 +1151,7 @@ def normalize_br_tags(s):
     """
     return s.replace("<br>", "<br />").replace("<br/>", "<br />")
 
+
 def cleaner_html(s):
     """
     >>> cleaner_html('<p>Hi&nbsp;there!</p>')
@@ -1126,6 +1163,7 @@ def cleaner_html(s):
     s = char_entities_to_decimal(s)
 
     return s
+
 
 def full_html_strip(s):
     """
@@ -1147,6 +1185,7 @@ def full_html_strip(s):
     s = char_entities_to_decimal(s)
 
     return s
+
 
 def substitute_pattern_with_char(s, pattern, repl_char='x'):
     """
@@ -1174,6 +1213,7 @@ def substitute_pattern_with_char(s, pattern, repl_char='x'):
 
     return s
 
+
 def substitute_patterns_with_char(s, patterns, repl_char='x'):
     """
     Like substitute_pattern_with_char, but takes a list of patterns.
@@ -1192,6 +1232,7 @@ def substitute_patterns_with_char(s, patterns, repl_char='x'):
             s = substitute_pattern_with_char(s=s, pattern=pat, repl_char=repl_char)
 
     return s
+
 
 def sub_with_exclusion_patterns(find_pattern, replace_with, s, exclusion_patterns):
     """
