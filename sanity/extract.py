@@ -686,6 +686,9 @@ def word_frequency(s, word):
     >>> word_frequency("The big cat caught a big catfish", "big")
     2
 
+    >>> word_frequency("It is ok to spook the hook", "ok")
+    1
+
     """
     # normalize to lowercase with no punctuation
     s = fmt.remove_punctuation(s.lower())
@@ -693,7 +696,8 @@ def word_frequency(s, word):
 
     # Neat Python feature that let's us split on a word. By breaking the string using the word, we
     # can deduce how often it was found.
-    bits = s.split(word)
+    # bits = s.split(word)
+    bits = re.split(r'\b{w}\b'.format(w=word), s)
 
     hit_count = len(bits) - 1
 
