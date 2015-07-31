@@ -555,7 +555,7 @@ def slugify(s):
     return value
 
 
-def add_leading_padding(s, char=' ', target_length=-1):
+def add_leading_padding(s, c=' ', target_length=-1):
     """
     >>> add_leading_padding(s='hi')
     'hi'
@@ -563,19 +563,19 @@ def add_leading_padding(s, char=' ', target_length=-1):
     >>> add_leading_padding(s='hi', target_length=10)
     '        hi'
     
-    >>> add_leading_padding(s='hi', char='-', target_length=3)
+    >>> add_leading_padding(s='hi', c='-', target_length=3)
     '-hi'
     
     >>> add_leading_padding(s=900)
     '900'
     
-    >>> add_leading_padding(s=900, char=0, target_length=5)
+    >>> add_leading_padding(s=900, c=0, target_length=5)
     '00900'
     
     >>> add_leading_padding(s='hit', target_length=2)  # See what I did there?
     'hi'
     
-    >>> add_leading_padding(s='9021012', char='0', target_length=9)
+    >>> add_leading_padding(s='9021012', c='0', target_length=9)
     '009021012'
     
     """
@@ -583,7 +583,7 @@ def add_leading_padding(s, char=' ', target_length=-1):
     
     if target_length > 0:
         z = z[:target_length]
-        sub_char = str(char)
+        sub_char = str(c)
         actual_length = len(z)
 
         if actual_length < target_length:
