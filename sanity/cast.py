@@ -37,6 +37,12 @@ def to_bool(input):
     >>> to_bool('off')
     False
 
+    >>> to_bool('yes')
+    True
+
+    >>> to_bool('no')
+    False
+
     """
     if input is None:
         return False
@@ -47,7 +53,7 @@ def to_bool(input):
     elif input in (u'False', 'False', u'false', 'false'):
         return False
 
-    elif input in (u'off', 'off'):
+    elif input in (u'off', 'off', u'no', 'no'):
         return False
 
     else:
