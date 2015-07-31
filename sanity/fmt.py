@@ -438,7 +438,7 @@ def list_as_comma_string(bits, serial_comma=False):
     return ' '.join(bits).rstrip(',')
 
 
-def compress_whitespace(s):
+def compress_whitespace(s, keep_ends=False):
     """
     Convert whitespace (ie., spaces, tabs, linebreaks, etc.) to spaces, and
     compress multiple-spaces into single-spaces.
@@ -455,12 +455,18 @@ def compress_whitespace(s):
     >>> compress_whitespace("  hi   @ there . com ")
     'hi @ there . com'
 
+    >>> compress_whitespace("  hi   @ there . com ", keep_ends=True)
+    ' hi @ there . com '
+
     """
     # Using the pre-compiled pattern is a bit faster when calling
     # multiple times.  (Well, millions of times... ;-)
     global RE_WHITESPACE
 
-    return RE_WHITESPACE.sub(' ', s.strip())
+    if keep_ends:
+        return RE_WHITESPACE.sub(' ', s)
+    else:
+        return RE_WHITESPACE.sub(' ', s.strip())
 
 
 def strip_and_compact_str(s):
