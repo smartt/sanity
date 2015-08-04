@@ -433,13 +433,13 @@ def zipcode(s):
     
     # Add leading zeros if the ZIP is less than 5 chars
     if length < 5:
-        z = fmt.add_leading_padding(s=z, char='0', target_length=5)
+        z = fmt.add_leading_padding(s=z, c='0', target_length=5)
     
     elif length == 5:
         pass
 
     elif length < 9:
-        z = fmt.add_leading_padding(s=z, char='0', target_length=9)
+        z = fmt.add_leading_padding(s=z, c='0', target_length=9)
 
     # Now put the '-' back in
     if len(z) == 9:
