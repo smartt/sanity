@@ -51,6 +51,37 @@ def is_only_whitespace(s, *args, **kwargs):
 
     return True
 
+def is_mixed_case(s):
+    """
+    >>> is_mixed_case('HiThere')
+    True
+
+    >>> is_mixed_case('Hi There')
+    True
+
+    >>> is_mixed_case('hi there')
+    False
+
+    >>> is_mixed_case('h')
+    False
+
+    >>> is_mixed_case('H')
+    False
+
+    >>> is_mixed_case(None)
+    False
+
+    """
+    if not isinstance(s, (str,)):
+        return False
+
+    mo_lo = re.search(r'[a-z]', s)
+    mo_hi = re.search(r'[A-Z]', s)
+
+    if ((mo_lo is None) or (mo_hi is None)):
+        return False
+
+    return True
 
 ## ---------------------
 if __name__ == "__main__":
