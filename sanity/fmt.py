@@ -1308,6 +1308,87 @@ def sub_with_exclusion_patterns(find_pattern, replace_with, s, exclusion_pattern
     return ''.join(bits)
 
 
+def encode_subs(s, subs, substrings=True, pre_space=False, post_space=False):
+    """
+    >>> encode_subs('hi there', [])
+    ('hi there', [])
+
+    >>> encode_subs('hi there', ['hi'])
+    ('g0SUB; there', [('hi', 'g0SUB;')])
+
+    # Multiple patterns
+    >>> encode_subs('hi there', ['hi', 're'], substrings=False)
+    ('g0SUB; there', [('hi', 'g0SUB;')])
+
+    # Multiple patterns
+    >>> encode_subs('hi there', ['hi', 're'], substrings=True)
+    ('g0SUB; theg1SUB;', [('hi', 'g0SUB;'), ('re', 'g1SUB;')])
+
+    # Without space-options, the patter will be found within the words too
+    >>> encode_subs('hi thiere', ['hi'])
+    ('g0SUB; tg0SUB;ere', [('hi', 'g0SUB;')])
+
+    # Here we require that 'hi' be followed by a space
+    >>> encode_subs('hi there', subs=['hi'], post_space=True)
+    ('g0SUB;there', [('hi ', 'g0SUB;')])
+
+    # If we require a pre-space, then we can't encode the 'hi' here
+    >>> encode_subs('hi there', subs=['hi'], pre_space=True)
+    ('hi there', [])
+
+    >>> encode_subs('hi hithere', subs=['hi'], pre_space=True)
+    ('hig0SUB;there', [(' hi', 'g0SUB;')])
+
+    >>> encode_subs('hi there', subs=['hi'], pre_space=True, post_space=True)
+    ('hi there', [])
+
+    """
+    mapping = []
+
+    search_str = r'{}'
+
+    if pre_space:
+        search_str = r'\s+{}'.format(search_str)
+    else:
+        if not substrings:
+            search_str = r'\b{}'.format(search_str)
+
+    if post_space:
+        search_str = r'{}\s+'.format(search_str)
+    else:
+        if not substrings:
+            search_str = r'{}\b'.format(search_str)
+
+    for key in subs:
+        search_key = search_str.format(key)
+
+        mo = re.search(search_key, s)
+        if mo is not None:
+
+            tup = (mo.group(0), 'g{}SUB;'.format(len(mapping)))
+            mapping.append(tup)
+            s = re.sub(search_key, tup[1], s)
+
+    return (s, mapping)
+
+
+def decode_subs(s, mapping):
+    """
+    >>> decode_subs('hi there', [])
+    'hi there'
+
+    >>> decode_subs('g0SUB;there', [('hi ', 'g0SUB;')])
+    'hi there'
+
+    >>> decode_subs('g0SUB; theg1SUB;', [('hi', 'g0SUB;'), ('re', 'g1SUB;')])
+    'hi there'
+    """
+    for tup in mapping:
+        s = s.replace(tup[1], tup[0])
+
+    return s
+
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest

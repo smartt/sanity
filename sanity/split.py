@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 
-import fmt
+import fmt, identify
 
 
 def on_pattern(r, s):
@@ -331,6 +331,102 @@ def sentences(s):
 
     return unslugged_lines
 
+def english_name(s):
+    """
+    A very basic name parser.  Given a full-name as a string, it returns
+    a tuple of (<first-name>, <last-name>)
+
+    >>> english_name('Tom Jones')
+    ('Tom', 'Jones')
+
+    >>> english_name('TomJones')
+    ('TomJones', '')
+
+    >>> english_name('Tom van Jones')
+    ('Tom', 'van Jones')
+
+    >>> english_name('tom van jones')
+    ('Tom', 'Van Jones')
+
+    >>> english_name('Tom Jack Jones')
+    ('Tom Jack', 'Jones')
+
+    >>> english_name('tom jack jones')
+    ('Tom Jack', 'Jones')
+
+    >>> english_name('Tom Jones, Jr.')
+    ('Tom', 'Jones')
+
+    >>> english_name('Sir Tom Jones')
+    ('Tom', 'Jones')
+
+    >>> english_name('Mr. Tom Jones')
+    ('Tom', 'Jones')
+
+    >>> english_name('Dr. Tom Jones')
+    ('Tom', 'Jones')
+
+    >>> english_name('Tom deJones')
+    ('Tom', 'deJones')
+
+    >>> english_name('Jan van der Merwe')
+    ('Jan', 'van der Merwe')
+
+    >>> english_name('Eric Van Rompuy')
+    ('Eric', 'Van Rompuy')
+
+    >>> english_name('Jean-Claude Van Damme')
+    ('Jean-Claude', 'Van Damme')
+
+    >>> english_name('John Hasbrouck Van Vleck')
+    ('John Hasbrouck', 'Van Vleck')
+
+    >>> english_name('Joost van den Vondel')
+    ('Joost', 'van den Vondel')
+
+    >>> english_name('Robert J. Van de Graaff')
+    ('Robert J.', 'Van de Graaff')
+
+    >>> english_name(None)
+
+    >>> english_name(42)
+
+    """
+    if not isinstance(s, (str,)):
+        return None
+
+    # Clean up the spaces
+    s = fmt.compress_whitespace(s)
+
+    # Switch to title (initial) caps unless the string has mixed-case
+    if not identify.is_mixed_case(s):
+        try:
+            s = s.title()
+        except AttributeError:
+            return None
+
+    #
+    tricky_bits = ['Van', 'De', 'Den', 'Der']
+    tricky_bits.extend([w.lower() for w in tricky_bits])
+
+    s, sub_mapping = fmt.encode_subs(s, subs=tricky_bits, substrings=False, post_space=True)
+
+    # Just get rid of this stuff
+    drop_these = ('Mr', 'Mrs', 'Dr', 'Miss', 'Sir', 'Mr.', 'Mrs.', 'Dr.', 'Jr', 'Jr.')
+
+    # The comma-strip fixes 'Foo, Jr.'
+    bits = [w.rstrip(',') for w in s.split(' ') if w not in drop_these]
+
+    first = ''
+    last = ''
+
+    if len(bits) <= 1:
+        first = s
+    else:
+        first = ' '.join(bits[0:-1])
+        last = bits[-1]
+
+    return (fmt.decode_subs(first, sub_mapping), fmt.decode_subs(last, sub_mapping))
 
 ## ---------------------
 if __name__ == "__main__":
