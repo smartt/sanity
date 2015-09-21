@@ -517,7 +517,7 @@ def strip_and_compact_str(s):
     return s
 
 
-def super_flat(s):
+def super_flat(s, uppercase=1):
     """
     >>> super_flat('')
     ''
@@ -528,11 +528,17 @@ def super_flat(s):
     >>> super_flat('123-456-abc')
     '123456ABC'
 
+    >>> super_flat('123-456-abc', uppercase=0)
+    '123456abc'
+
     """
     if s is None:
         return ''
 
-    return slugify(s).upper().replace('-', '')
+    if uppercase:
+        return slugify(s).upper().replace('-', '')
+    else:
+        return slugify(s).lower().replace('-', '')
 
 
 def slugify(s):
