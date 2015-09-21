@@ -119,6 +119,9 @@ def to_int(arg, default=0):
 
 def to_ascii(s, replace=''):
     """
+    >>> to_ascii(None)
+    ''
+
     >>> to_ascii('hi there')
     'hi there'
 
@@ -136,7 +139,9 @@ def to_ascii(s, replace=''):
     'hi&mdash;there'
 
     """
-    # return str(''.join([c for c in s if 0 <= ord(c) <= 128]))
+    if s is None:
+        return ''
+
     letters = []
 
     for c in s:
