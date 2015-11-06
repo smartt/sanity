@@ -113,6 +113,7 @@ def on_pattern(r, s):
 
     return results
 
+
 def taxonomy_tags(s, split_spaces=False):
     """
     >>> taxonomy_tags('hi there')
@@ -331,6 +332,7 @@ def sentences(s):
 
     return unslugged_lines
 
+
 def english_name(s):
     """
     A very basic name parser.  Given a full-name as a string, it returns
@@ -338,6 +340,9 @@ def english_name(s):
 
     >>> english_name('Tom Jones')
     ('Tom', 'Jones')
+
+    >>> english_name(u'Tom Jones')
+    (u'Tom', u'Jones')
 
     >>> english_name('TomJones')
     ('TomJones', '')
@@ -392,7 +397,7 @@ def english_name(s):
     >>> english_name(42)
 
     """
-    if not isinstance(s, (str,)):
+    if not isinstance(s, (str, unicode)):
         return None
 
     # Clean up the spaces
