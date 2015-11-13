@@ -138,6 +138,16 @@ def calendar_date(s):
     >>> calendar_date('3.53 for coffee on 4.20')
     (datetime.date(2015, 4, 20), '3.53 for coffee on')
 
+    >>> today = date.today()
+    >>> res = calendar_date('today')
+    >>> res == (today, '')
+    True
+
+    >>> res = calendar_date('tomorrow')
+    >>> res == (today + timedelta(days=1), '')
+    True
+
+
     """
     def _sub_dayofweek(dow, num, s):
         d = today - timedelta(days=today.isoweekday() - num)
@@ -157,8 +167,11 @@ def calendar_date(s):
     d = today
 
     if s.find('today') >= 0:
-        d = timedelta(days=1)
         s = s.replace('today', '', 1)
+
+    elif s.find('tomorrow') >= 0:
+        d = today + timedelta(days=1)
+        s = s.replace('tomorrow', '', 1)
 
     elif s.find('yesterday') >= 0:
         d = today - timedelta(days=1)
