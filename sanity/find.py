@@ -147,6 +147,12 @@ def calendar_date(s):
     >>> res == (today + timedelta(days=1), '')
     True
 
+    >>> res = calendar_date('coffee tomorrow')
+    >>> res == (today + timedelta(days=1), 'coffee')
+    True
+
+    >>> calendar_date('foobar')
+    (None, 'foobar')
 
     """
     def _sub_dayofweek(dow, num, s):
@@ -215,7 +221,7 @@ def calendar_date(s):
         d, s = _find_date_by_patterns(s, patterns=("%m/%d", "%m/%d/%y", "%m/%d/%Y", "%m.%d"))
 
         if not d:
-            d = today
+            d = None
 
     s = _prepstr(s)
 
