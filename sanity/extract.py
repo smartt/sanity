@@ -14,13 +14,21 @@ def date_by_pattern(s, pattern, return_match_str=False):
     >>> date_by_pattern('4/20/2014', '%m/%d/%Y')
     datetime.date(2014, 4, 20)
 
-    # This will fail in 2016...
-    >>> date_by_pattern('4/20', '%m/%d')
-    datetime.date(2015, 4, 20)
+    >>> today = date.today()
+    >>> date_by_pattern('4/20', '%m/%d') == date(today.year, 4, 20)
+    True
 
-    # This will fail in 2016...
-    >>> date_by_pattern('4.20', '%m.%d')
-    datetime.date(2015, 4, 20)
+    >>> date_by_pattern('4.20', '%m.%d') == date(today.year, 4, 20)
+    True
+
+    >>> date_by_pattern('4-20', '%m-%d') == date(today.year, 4, 20)
+    True
+
+    >>> date_by_pattern('4-20-{}'.format(today.year), '%m-%d-%Y') == date(today.year, 4, 20)
+    True
+
+    >>> date_by_pattern('{}-4-20'.format(today.year), '%Y-%m-%d') == date(today.year, 4, 20)
+    True
 
     >>> date_by_pattern('420', '%m/%d')
 
@@ -696,7 +704,6 @@ def word_frequency(s, word):
 
     # Neat Python feature that let's us split on a word. By breaking the string using the word, we
     # can deduce how often it was found.
-    # bits = s.split(word)
     bits = re.split(r'\b{w}\b'.format(w=word), s)
 
     hit_count = len(bits) - 1
