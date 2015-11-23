@@ -14,6 +14,15 @@ def date_by_pattern(s, pattern, return_match_str=False):
     >>> date_by_pattern('4/20/2014', '%m/%d/%Y')
     datetime.date(2014, 4, 20)
 
+    >>> date_by_pattern('4/20/2014 is a day', '%m/%d/%Y', return_match_str=True)
+    (datetime.date(2014, 4, 20), '4/20/2014')
+
+    >>> date_by_pattern('4-20-2014', '%m-%d-%Y', return_match_str=True)
+    (datetime.date(2014, 4, 20), '4-20-2014')
+
+    >>> date_by_pattern('4-20-14', '%m-%d-%y')
+    datetime.date(2014, 4, 20)
+
     >>> today = date.today()
     >>> date_by_pattern('4/20', '%m/%d') == date(today.year, 4, 20)
     True
