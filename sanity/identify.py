@@ -83,6 +83,40 @@ def is_mixed_case(s):
 
     return True
 
+def is_ip_address(s):
+    """
+    >>> is_ip_address(None)
+    False
+
+    >>> is_ip_address('192.168.1.7')
+    True
+
+    >>> is_ip_address('192.168.1.7:1221')
+    False
+
+    >>> is_ip_address('192168.1.7')
+    False
+
+    >>> is_ip_address('foo')
+    False
+
+    """
+    if s is None:
+        return False
+
+    pattern = r'\d+\.\d+\.\d+\.\d+'
+
+    mo = re.match(pattern, s)
+
+    if mo is None:
+        return False
+
+    if mo.group(0) == s:
+        return True
+
+    return False
+
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
