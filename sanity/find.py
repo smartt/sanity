@@ -129,6 +129,15 @@ def calendar_date(s):
     >>> calendar_date('4/20/14')
     (datetime.date(2014, 4, 20), '')
 
+    >>> calendar_date('4/20/2014')
+    (datetime.date(2014, 4, 20), '')
+
+    >>> calendar_date('4-20-14')
+    (datetime.date(2014, 4, 20), '')
+
+    >>> calendar_date('4-20-2014')
+    (datetime.date(2014, 4, 20), '')
+
     >>> calendar_date('coffee on 4/20')
     (datetime.date(2015, 4, 20), 'coffee on')
 
@@ -170,9 +179,10 @@ def calendar_date(s):
     #
     # Find the date.  Default to 'today' if not resolved
     today = date.today()
-    d = today
+    d = None
 
     if s.find('today') >= 0:
+        d = today
         s = s.replace('today', '', 1)
 
     elif s.find('tomorrow') >= 0:
@@ -205,23 +215,36 @@ def calendar_date(s):
         d, s = _sub_dayofweek('sunday', 7, s)
 
     else:
-        # tokenize and scan for date-like strings
-        def _find_date_by_patterns(s, patterns):
-            for pat in patterns:
-                d, matched_str = extract.date_by_pattern(s, pat, return_match_str=True)
+        # Split up the patterns so we don't have to test ALL of them if some don't seem likely to match
+        slash_patterns = ["%m/%d", "%m/%d/%y", "%m/%d/%Y", "%Y/%m/%d"]
+        dash_patterns = ["%m-%d-%y", "%m-%d-%Y", "%Y-%m-%d"]
+        dot_patterns = ["%m.%d"]
 
-                if d:
-                    #matched_str = d.strftime(pat)
-                    s = s.replace(matched_str, '', 1)
-                    break
+        use_patterns = []
 
-            return d, s
+        if s.find('/') >= 0:
+            use_patterns.extend(slash_patterns)
 
-        # TODO: Pull the patterns from some kind of preferences
-        d, s = _find_date_by_patterns(s, patterns=("%m/%d", "%m/%d/%y", "%m/%d/%Y", "%m.%d"))
+        if s.find('-') >= 0:
+            use_patterns.extend(dash_patterns)
 
-        if not d:
-            d = None
+        if s.find('.') >= 0:
+            use_patterns.extend(dot_patterns)
+
+        # Tokenize and scan for date-like strings
+        for pat in use_patterns:
+            # If the next bit finds something, `d` will be a datetime object, and
+            # `matched_str` will be the string that the code thinks is the date.
+            # Everything else will be removed. (Unless a date isn't found at all
+            # in the string, in which case `d` will be None and `matched_str` will
+            # be whatever we passed-in.
+            d, matched_str = extract.date_by_pattern(s, pattern=pat, return_match_str=True)
+
+            if d is not None:
+                # If we found a date, remove that part of the string from the source string,
+                # but only once.
+                s = s.replace(matched_str, '', 1)
+                break
 
     s = _prepstr(s)
 
