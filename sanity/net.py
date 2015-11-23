@@ -9,8 +9,10 @@ def ip_for_hostname(s):
 
     >>> ip_for_hostname(None)
 
-    >>> ip_for_hostname('google.com')
-    '173.194.115.9'
+    >>> import identify
+    >>> ip = ip_for_hostname('google.com')
+    >>> identify.is_ip_address(ip)
+    True
 
     """
     try:
