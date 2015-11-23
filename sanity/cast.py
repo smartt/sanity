@@ -145,12 +145,17 @@ def to_ascii(s, replace=''):
     letters = []
 
     for c in s:
-        if 0 <= ord(c) <= 128:
-            letters.append(c)
-        else:
+        try:
+            c = str(c)
+        except:
             letters.append(replace)
+        else:
+            if 0 <= ord(c) <= 128:
+                letters.append(c)
+            else:
+                letters.append(replace)
 
-    return str(''.join(letters))
+    return ''.join(letters)
 
 def to_unicode(s, encoding='utf-8', errors='strict'):
     """
