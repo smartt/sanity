@@ -1,6 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from datetime import date, datetime
+import json
 
+
+def to_ascii(s, replace=''):
+    """
+    >>> to_ascii(None)
+    ''
+
+    >>> to_ascii('hi there')
+    'hi there'
+
+    >>> to_ascii('hi €there')
+    'hi there'
+
+    Watch what happens here -- a reminder that unicode chars take multiple bytes!
+    >>> to_ascii('hi €there', replace='!')
+    'hi !!!there'
+
+    >>> to_ascii(u'hi there')
+    'hi there'
+
+    >>> to_ascii(u'hi&mdash;there')
+    'hi&mdash;there'
+
+    """
+    if s is None:
+        return ''
+
+    letters = []
+
+    for c in s:
+        try:
+            c = str(c)
+        except:
+            letters.append(replace)
+        else:
+            if 0 <= ord(c) <= 128:
+                letters.append(c)
+            else:
+                letters.append(replace)
+
+    return ''.join(letters)
 
 def to_bool(input):
     """
@@ -117,45 +159,90 @@ def to_int(arg, default=0):
     except:
         return default
 
-def to_ascii(s, replace=''):
+def to_json(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
     """
-    >>> to_ascii(None)
-    ''
+    >>> to_json({'hi':'there'})
+    '{"hi": "there"}'
 
-    >>> to_ascii('hi there')
-    'hi there'
+    >>> to_json({'hi':'there', 'one': 1})
+    '{"hi": "there", "one": 1}'
 
-    >>> to_ascii('hi €there')
-    'hi there'
+    >>> t = date.today()
+    >>> result = to_json({'hi':'there', 'today': t})
+    >>> expected = '{{"hi": "there", "today": "{}"}}'.format(t.strftime('%Y-%m-%d'))
+    >>> result == expected
+    True
 
-    Watch what happens here -- a reminder that unicode chars take multiple bytes!
-    >>> to_ascii('hi €there', replace='!')
-    'hi !!!there'
-
-    >>> to_ascii(u'hi there')
-    'hi there'
-
-    >>> to_ascii(u'hi&mdash;there')
-    'hi&mdash;there'
+    >>> f = TestObject()
+    >>> to_json({'hi': f})
+    '{"hi": "TestObject"}'
 
     """
-    if s is None:
-        return ''
+    results = dict()
 
-    letters = []
+    for k, v in d.items():
+        if isinstance(v, (str, unicode)):
+            results[k] = v
 
-    for c in s:
-        try:
-            c = str(c)
-        except:
-            letters.append(replace)
+        elif isinstance(v, (int, float)):
+            results[k] = v
+
+        elif isinstance(v, (date,)):
+            results[k] = '{}'.format(v.strftime(date_format))
+
+        elif isinstance(v, (datetime,)):
+            results[k] = '{}'.format(v.strftime(datetime_format))
+
+        elif isinstance(v, (object,)):
+            string_representation = str(v)
+
+            if string_representation.startswith('<') and string_representation.endswith('>'):
+                # Then it's probably a generic Type representation, and not something we want
+                # to send over JSON.
+                try:
+                    # Extract the classname and use that
+                    string_representation = str(v.__class__).split('.')[-1]
+                except:
+                    pass
+
+            results[k] = string_representation
+
         else:
-            if 0 <= ord(c) <= 128:
-                letters.append(c)
-            else:
-                letters.append(replace)
+            results[k] = str(v)
 
-    return ''.join(letters)
+    return json.dumps(results)
+
+def to_latin_one(s):
+    return to_str(s, encoding='latin-1',  errors='ignore')
+
+def to_str(s, encoding='utf-8', errors='strict'):
+    """
+    MOSTLY FROM DJANGO 1.3 django.utils.encoding
+
+    Returns a bytestring version of 's', encoded as specified in 'encoding'.
+
+    >>> to_str('Hi There')
+    'Hi There'
+
+    """
+    if not isinstance(s, basestring):
+        try:
+            return str(s)
+
+        except UnicodeEncodeError:
+            if isinstance(s, Exception):
+                return ' '.join([to_str(arg, encoding, errors) for arg in s])
+
+            return unicode(s).encode(encoding, errors)
+
+    elif isinstance(s, unicode):
+        return s.encode(encoding, errors)
+
+    elif s and encoding != 'utf-8':
+        return s.decode('utf-8', errors).encode(encoding, errors)
+
+    else:
+        return s
 
 def to_unicode(s, encoding='utf-8', errors='strict'):
     """
@@ -194,41 +281,13 @@ def to_unicode(s, encoding='utf-8', errors='strict'):
 
     return s
 
-def to_str(s, encoding='utf-8', errors='strict'):
-    """
-    MOSTLY FROM DJANGO 1.3 django.utils.encoding
-
-    Returns a bytestring version of 's', encoded as specified in 'encoding'.
-
-    >>> to_str('Hi There')
-    'Hi There'
-
-    """
-    if not isinstance(s, basestring):
-        try:
-            return str(s)
-
-        except UnicodeEncodeError:
-            if isinstance(s, Exception):
-                return ' '.join([to_str(arg, encoding, errors) for arg in s])
-
-            return unicode(s).encode(encoding, errors)
-
-    elif isinstance(s, unicode):
-        return s.encode(encoding, errors)
-
-    elif s and encoding != 'utf-8':
-        return s.decode('utf-8', errors).encode(encoding, errors)
-
-    else:
-        return s
-
-def to_latin_one(s):
-    return to_str(s, encoding='latin-1',  errors='ignore')
-
 ## ---------------------
 if __name__ == "__main__":
     import doctest
     print("[cast.py] Testing...")
+
+    class TestObject():
+        message = 'howdy'
+
     doctest.testmod()
     print("Done.")
