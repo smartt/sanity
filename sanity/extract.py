@@ -814,6 +814,23 @@ def top_line_lenths(s, limit=30):
 
     return results
 
+def word_count(s):
+    """
+    >>> word_count(None)
+
+    >>> word_count(10)
+
+    >>> word_count("one two three four five")
+    5
+
+    >>> word_count("one.two three-four five")
+    3
+
+    """
+    if isinstance(s, (str, unicode)):
+        return len(s.split())
+    else:
+        return None
 
 ## ---------------------
 if __name__ == "__main__":
