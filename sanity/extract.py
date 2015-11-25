@@ -723,7 +723,8 @@ def word_frequency(s, word):
         return hit_count
 
 
-def top_word_frequency(s, minimum=1, limit=30, exclude=None):
+DEFAULT_SKIP_WORDS = ['a', 'an', 'and', 'be', 'eg', 'for', 'if' 'in', 'is', 'not', 'of', 'on', 'or', 'that', 'the', 'to']
+def top_word_frequency(s, minimum=1, limit=30, exclude=DEFAULT_SKIP_WORDS):
     """Return a structure containing the top `limit` number of words used in the document by their frequency of use.
 
     @param    s            String    The text to process.
@@ -740,7 +741,7 @@ def top_word_frequency(s, minimum=1, limit=30, exclude=None):
     >>> top_word_frequency("The big cat caught a big mouse", exclude=['big'])
     []
 
-    >>> top_word_frequency("The big cat caught a big mouse that the dog liked because it looked like a cat.")
+    >>> top_word_frequency("The big cat caught a big mouse that the dog liked because it looked like a cat.", exclude=None)
     [('a', 2), ('big', 2), ('cat', 2), ('the', 2)]
 
 
