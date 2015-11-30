@@ -25,9 +25,18 @@ def to_ascii(s, replace=''):
     >>> to_ascii(u'hi&mdash;there')
     'hi&mdash;there'
 
+    >>> to_ascii(1)
+    '1'
+
+    >>> to_ascii(3.14)
+    '3.14'
+
     """
     if s is None:
         return ''
+
+    if not isinstance(s, (str, unicode)):
+        s = to_str(s)
 
     letters = []
 
