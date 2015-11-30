@@ -1395,6 +1395,42 @@ def decode_subs(s, mapping):
     return s
 
 
+def path_hash_from_string(s, length=3, separator='/'):
+    """
+    >>> path_hash_from_string(None)
+
+    >>> path_hash_from_string('hi')
+    'hi'
+
+    >>> path_hash_from_string('abcdefg')
+    'abc/def/g'
+
+    >>> path_hash_from_string('abcdefg', length=2)
+    'ab/cd/ef/g'
+
+    >>> path_hash_from_string('abcdefg', length=4)
+    'abcd/efg'
+
+    >>> path_hash_from_string('abcdefg', length=2, separator=':')
+    'ab:cd:ef:g'
+
+    >>> path_hash_from_string(1234567)
+    '123/456/7'
+
+    """
+    if s is None:
+        return None
+
+    if not isinstance(s, (str, unicode)):
+        s = cast.to_ascii(s)
+
+    # Break up the string into a list of character chunks
+    parts = [s[i:i+length] for i in range(0, len(s), length)]
+
+    # Put it back together in the form of a path
+    return separator.join(parts)
+
+
 ## ---------------------
 if __name__ == "__main__":
     import doctest
