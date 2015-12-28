@@ -168,23 +168,25 @@ def to_int(arg, default=0):
     except:
         return default
 
-def to_json(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
+def to_jsonable(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
     """
-    >>> to_json({'hi':'there'})
-    '{"hi": "there"}'
+    >>> to_jsonable({'hi':'there'})
+    {'hi': 'there'}
 
-    >>> to_json({'hi':'there', 'one': 1})
-    '{"hi": "there", "one": 1}'
+    >>> to_jsonable({'hi':'there', 'one': 1})
+    {'hi': 'there', 'one': 1}
 
     >>> t = date.today()
-    >>> result = to_json({'hi':'there', 'today': t})
-    >>> expected = '{{"hi": "there", "today": "{}"}}'.format(t.strftime('%Y-%m-%d'))
+    >>> result = to_jsonable({'hi':'there', 'today': t})
+    >>> expected = {'hi': 'there', 'today': '{}'.format(t.strftime('%Y-%m-%d'))}
     >>> result == expected
+    True
+    >>> result['today'] == '{}'.format(t.strftime('%Y-%m-%d'))
     True
 
     >>> f = TestObject()
-    >>> to_json({'hi': f})
-    '{"hi": "TestObject"}'
+    >>> to_jsonable({'hi': f})
+    {'hi': 'TestObject'}
 
     """
     results = dict()
@@ -219,7 +221,28 @@ def to_json(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
         else:
             results[k] = str(v)
 
-    return json.dumps(results)
+    return results
+
+def to_json(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
+    """
+    >>> to_json({'hi':'there'})
+    '{"hi": "there"}'
+
+    >>> to_json({'hi':'there', 'one': 1})
+    '{"hi": "there", "one": 1}'
+
+    >>> t = date.today()
+    >>> result = to_json({'hi':'there', 'today': t})
+    >>> expected = '{{"hi": "there", "today": "{}"}}'.format(t.strftime('%Y-%m-%d'))
+    >>> result == expected
+    True
+
+    >>> f = TestObject()
+    >>> to_json({'hi': f})
+    '{"hi": "TestObject"}'
+
+    """
+    return json.dumps(to_jsonable(d))
 
 def to_latin_one(s):
     return to_str(s, encoding='latin-1',  errors='ignore')
