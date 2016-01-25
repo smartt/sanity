@@ -170,6 +170,12 @@ def to_int(arg, default=0):
 
 def to_jsonable(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
     """
+    >>> to_jsonable(None)
+    ''
+
+    >>> to_jsonable('hi')
+    'hi'
+
     >>> to_jsonable({'hi':'there'})
     {'hi': 'there'}
 
@@ -184,44 +190,67 @@ def to_jsonable(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ')
     >>> result['today'] == '{}'.format(t.strftime('%Y-%m-%d'))
     True
 
+    >>> to_jsonable({'hi':'there', 'one': [1, 2, 3, 4]})
+    {'hi': 'there', 'one': [1, 2, 3, 4]}
+
+    >>> to_jsonable({'hi':'there', 'one': ['1', '2', '3', '4']})
+    {'hi': 'there', 'one': ['1', '2', '3', '4']}
+
     >>> f = TestObject()
     >>> to_jsonable({'hi': f})
     {'hi': 'TestObject'}
 
+    >>> to_jsonable({'hi':'there', 'one': [f, f, f]})
+    {'hi': 'there', 'one': ['TestObject', 'TestObject', 'TestObject']}
+
     """
-    results = dict()
+    if d is None:
+        return ''
 
-    for k, v in d.items():
-        if isinstance(v, (str, unicode)):
-            results[k] = v
+    elif isinstance(d, (dict)):
+        results = {}
 
-        elif isinstance(v, (int, float)):
-            results[k] = v
+        for k, v in d.items():
+            results[k] = to_jsonable(v)
+        
+        return results
 
-        elif isinstance(v, (date,)):
-            results[k] = '{}'.format(v.strftime(date_format))
+    elif isinstance(d, (str, unicode)):
+        return d
 
-        elif isinstance(v, (datetime,)):
-            results[k] = '{}'.format(v.strftime(datetime_format))
+    elif isinstance(d, (int, float)):
+        return d
 
-        elif isinstance(v, (object,)):
-            string_representation = str(v)
+    elif isinstance(d, (date,)):
+        return '{}'.format(d.strftime(date_format))
 
-            if string_representation.startswith('<') and string_representation.endswith('>'):
-                # Then it's probably a generic Type representation, and not something we want
-                # to send over JSON.
-                try:
-                    # Extract the classname and use that
-                    string_representation = str(v.__class__).split('.')[-1]
-                except:
-                    pass
+    elif isinstance(d, (datetime,)):
+        return '{}'.format(d.strftime(datetime_format))
 
-            results[k] = string_representation
+    elif isinstance(d, (list,)):
+        results = []
 
-        else:
-            results[k] = str(v)
+        for item in d:
+            results.append(to_jsonable(item))
 
-    return results
+        return results
+
+    elif isinstance(d, (object,)):
+        string_representation = str(d)
+
+        if string_representation.startswith('<') and string_representation.endswith('>'):
+            # Then it's probably a generic Type representation, and not something we want
+            # to send over JSON.
+            try:
+                # Extract the classname and use that
+                string_representation = str(d.__class__).split('.')[-1]
+            except:
+                pass
+
+        return string_representation
+
+    else:
+        return str(d)
 
 def to_json(d, date_format='%Y-%m-%d', datetime_format='%Y-%m-%dT%H-%M-%SZ'):
     """
