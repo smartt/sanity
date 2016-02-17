@@ -396,6 +396,21 @@ def price_like_float(s):
     >>> price_like_float('.19')
     0.19
 
+    >>> price_like_float('298')
+    298.0
+
+    >>> price_like_float('298.0')
+    298.0
+
+    >>> price_like_float('298.00')
+    298.0
+
+    >>> price_like_float('298.0000000')
+    298.0
+
+    >>> price_like_float('123456789.00')
+    123456789.0
+
     """
 
     try:
