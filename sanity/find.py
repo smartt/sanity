@@ -138,14 +138,17 @@ def calendar_date(s):
     >>> calendar_date('4-20-2014')
     (datetime.date(2014, 4, 20), '')
 
-    >>> calendar_date('coffee on 4/20')
-    (datetime.date(2015, 4, 20), 'coffee on')
+    >>> result = calendar_date('coffee on 4/20')
+    >>> result == (date(date.today().year, 4, 20), 'coffee on')
+    True
 
-    >>> calendar_date('3.53 for coffee on 4/20')
-    (datetime.date(2015, 4, 20), '3.53 for coffee on')
+    >>> result = calendar_date('3.53 for coffee on 4/20')
+    >>> result == (date(date.today().year, 4, 20), '3.53 for coffee on')
+    True
 
-    >>> calendar_date('3.53 for coffee on 4.20')
-    (datetime.date(2015, 4, 20), '3.53 for coffee on')
+    >>> result = calendar_date('3.53 for coffee on 4.20')
+    >>> result == (date(date.today().year, 4, 20), '3.53 for coffee on')
+    True
 
     >>> today = date.today()
     >>> res = calendar_date('today')
