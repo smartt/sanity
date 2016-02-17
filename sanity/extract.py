@@ -155,7 +155,7 @@ def number_range(s):
     upper = None
 
     # Start with the easy pattern
-    mo = re.search(ur'\b([\d\,\.]+)\s*[-–]\s*([\d\,\.]+)\b', s)
+    mo = re.search(r'\b([\d\,\.]+)\s*[-–]\s*([\d\,\.]+)\b', s)
 
     try:
         lower = int(mo.group(1))
