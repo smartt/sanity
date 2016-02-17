@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 import extract, fmt
 
+
 def _prepstr(s):
     """
     >>> _prepstr(s='')
@@ -30,6 +31,7 @@ def _prepstr(s):
     """
 
     return fmt.compress_whitespace(s.lower())
+
 
 def dollar_amount(s):
     #
@@ -123,6 +125,7 @@ def dollar_amount(s):
     s = _prepstr(s.replace('$', ''))
 
     return amt, s
+
 
 def calendar_date(s):
     """
