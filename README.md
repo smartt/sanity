@@ -26,6 +26,9 @@ These are `is_` functions, like `is_numeric` and `is_whitespace`.
 ## numeraltable.py ##
 This contains the numbers 0 to 100 spelled out (e.g., zero to one hundred.) It is used by `fmt.py` when converting numbers to numerals.
 
+## shell.py ##
+For when you want to run something in the shell rather than Python. This is really just so I don't have to keep looking up the subprocess syntax whenever this need comes up.
+
 ## split.py ##
 Split strings based on patterns, or by things that look like taxonomy 'tags'.
 
@@ -38,7 +41,7 @@ Currently all it knows how to do is find non-ascii characters in files.  I neede
 
 ----
 
-Copyright 2015 Erik Smartt
+Copyright 2009-2016 Erik Smartt
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
